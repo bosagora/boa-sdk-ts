@@ -25,7 +25,7 @@ import { ITxHistoryElement, ITxOverview, IPendingTxs, ISPVStatus } from "./respo
 import { Transaction } from "../data/Transaction";
 import { handleNetworkError } from "./error/ErrorTypes";
 import { TxPayloadFee } from "../utils/TxPayloadFee";
-
+import { Utils } from "../utils/Utils";
 import { AxiosResponse } from "axios";
 import uri from "urijs";
 
@@ -288,6 +288,36 @@ export class BOAClient {
         return Request.get(url.toString()).then((response: AxiosResponse) => {
             return JSBI.BigInt(response.data);
         });
+    }
+
+    /**
+     * Returns the connection status to Stoa.
+     */
+    public getStoaStatus(): Promise<boolean> {
+        let url = uri(this.server_url).filename("/block_height");
+
+        return Request.get(url.toString())
+            .then((response: AxiosResponse) => {
+                return Utils.isInteger(response.data);
+            })
+            .catch((reason) => {
+                return false;
+            });
+    }
+
+    /**
+     * Returns the connection status to Agora.
+     */
+    public getAgoraStatus(): Promise<boolean> {
+        let url = uri(this.agora_url).filename("/block_height");
+
+        return Request.get(url.toString())
+            .then((response: AxiosResponse) => {
+                return Utils.isInteger(response.data);
+            })
+            .catch((reason) => {
+                return false;
+            });
     }
 
     /**

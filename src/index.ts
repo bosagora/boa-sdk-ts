@@ -61,5 +61,14 @@ export { Request } from "./modules/net/Request";
 
 export { NetworkError, NotFoundError, BadRequestError, handleNetworkError } from "./modules/net/error/ErrorTypes";
 
+export {
+    Wallet,
+    WalletFeeOption,
+    WalletResultCode,
+    IWalletReceiver,
+    IWalletResult,
+    IWalletOption,
+} from "./modules/wallet/Wallet";
+
 import JSBI from "jsbi";
 export { JSBI };
