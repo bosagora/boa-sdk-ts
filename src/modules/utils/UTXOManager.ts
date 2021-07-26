@@ -147,6 +147,13 @@ export class UTXOManager {
             })
             .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount));
     }
+
+    /**
+     * Initializes the internal UTXO array.
+     */
+    public clear() {
+        this.items.length = 0;
+    }
 }
 
 /**
