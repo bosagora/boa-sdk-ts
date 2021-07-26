@@ -16,7 +16,7 @@ import { Signature } from "../common/Signature";
 import { VarInt } from "../utils/VarInt";
 import { Utils } from "../utils/Utils";
 import { hashPart } from "../common/Hash";
-import { LinkDataWithVoteData } from "../wallet/LinkData";
+import { LinkDataWithVoteData } from "./LinkData";
 
 import { SmartBuffer } from "smart-buffer";
 

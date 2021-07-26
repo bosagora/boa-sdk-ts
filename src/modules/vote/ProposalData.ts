@@ -15,7 +15,7 @@ import { Hash } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
 import { Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
-import { LinkDataWithProposalData } from "../wallet/LinkData";
+import { LinkDataWithProposalData } from "./LinkData";
 
 import JSBI from "jsbi";
 import { SmartBuffer } from "smart-buffer";
