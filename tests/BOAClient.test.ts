@@ -657,6 +657,26 @@ export class TestStoa {
             else res.status(200).send(JSON.stringify(height.toString()));
         });
 
+        // http://localhost/balance
+        this.app.get("/wallet/balance/:address", (req: express.Request, res: express.Response) => {
+            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+
+            if (sample_utxo_address == address.toString()) {
+                res.status(200).send(
+                    JSON.stringify({
+                        address: sample_utxo_address,
+                        balance: "2000000",
+                        spendable: "1800000",
+                        frozen: "200000",
+                        locked: "0",
+                    })
+                );
+                return;
+            }
+
+            res.status(400).send();
+        });
+
         this.app.set("port", this.port);
 
         // Listen on provided this.port on this.address.
@@ -1679,5 +1699,23 @@ describe("BOA Client", () => {
             JSON.stringify(utxos),
             '[{"utxo":"0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459200,"lock_type":0,"lock_bytes":"uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84="},{"utxo":"0x75283072696d82d8bca2fe45471906a26df1dbe0736e41a9f78e02a14e2bfced6e0cb671f023626f890f28204556aca217f3023c891fe64b9f4b3450cb3e80ad","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459800,"lock_type":0,"lock_bytes":"8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8="}]'
         );
+    });
+
+    it("Test a function of the BOA Client - `getBalance`", async () => {
+        // Set URL
+        let stoa_uri = URI("http://localhost").port(stoa_port);
+        let agora_uri = URI("http://localhost").port(agora_port);
+
+        // Create BOA Client
+        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+
+        // Query
+        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        let balance = await boa_client.getBalance(public_key);
+        assert.deepStrictEqual(balance.address, "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        assert.deepStrictEqual(balance.balance, sdk.JSBI.BigInt(2000000));
+        assert.deepStrictEqual(balance.spendable, sdk.JSBI.BigInt(1800000));
+        assert.deepStrictEqual(balance.frozen, sdk.JSBI.BigInt(200000));
+        assert.deepStrictEqual(balance.locked, sdk.JSBI.BigInt(0));
     });
 });

@@ -249,6 +249,32 @@ export class JSONValidator {
                 required: ["bytes"],
             },
         ],
+        [
+            "Balance",
+            {
+                title: "Balance",
+                type: "object",
+                properties: {
+                    address: {
+                        type: "string",
+                    },
+                    balance: {
+                        type: "string",
+                    },
+                    spendable: {
+                        type: "string",
+                    },
+                    frozen: {
+                        type: "string",
+                    },
+                    locked: {
+                        type: "string",
+                    },
+                },
+                additionalProperties: false,
+                required: ["address", "balance", "spendable", "frozen", "locked"],
+            },
+        ],
     ]);
 
     /**

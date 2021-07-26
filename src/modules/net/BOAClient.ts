@@ -20,6 +20,7 @@ import { Request } from "./Request";
 import { UnspentTxOutput } from "./response/UnspentTxOutput";
 import { Validator } from "./response/Validator";
 import { TransactionFee } from "./response/TrasactionFee";
+import { Balance } from "./response/Balance";
 import { ITxHistoryElement, ITxOverview, IPendingTxs, ISPVStatus } from "./response/Types";
 import { Transaction } from "../data/Transaction";
 import { handleNetworkError } from "./error/ErrorTypes";
@@ -470,6 +471,26 @@ export class BOAClient {
             } catch (error) {
                 reject(error);
             }
+        });
+    }
+
+    /**
+     * Request a balance based on the address.
+     * @param address The address
+     * @returns Promise that resolves or
+     * rejects with response from the Stoa
+     */
+    public getBalance(address: PublicKey): Promise<Balance> {
+        return new Promise<Balance>((resolve, reject) => {
+            let url = uri(this.server_url).directory("wallet/balance").filename(address.toString());
+
+            Request.get(url.toString())
+                .then((response: AxiosResponse) => {
+                    resolve(Balance.reviver("", response.data));
+                })
+                .catch((reason: any) => {
+                    reject(handleNetworkError(reason));
+                });
         });
     }
 
