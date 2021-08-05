@@ -148,6 +148,7 @@ export class BallotData {
     public static YES: number = 0;
     public static NO: number = 1;
     public static BLANK: number = 2;
+    public static REJECT: number = 9;
 
     /**
      * Constructor
