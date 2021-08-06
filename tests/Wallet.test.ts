@@ -217,18 +217,6 @@ class TestStoa {
             );
         });
 
-        // http://localhost/utxo
-        this.app.get("/utxo/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
-
-            if (sample_utxo_address == address.toString()) {
-                res.status(200).send(JSON.stringify(sample_utxo));
-                return;
-            }
-
-            res.status(200).send(JSON.stringify([]));
-        });
-
         this.app.post("/utxos", (req: express.Request, res: express.Response) => {
             if (req.body.utxos === undefined) {
                 res.status(400).send({
@@ -257,15 +245,64 @@ class TestStoa {
         });
 
         // http://localhost/utxo
-        this.app.get("/utxos/:address", (req: express.Request, res: express.Response) => {
+        this.app.get("/wallet/utxo/:address", (req: express.Request, res: express.Response) => {
             let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
-            if (sample_utxo_address == address.toString()) {
-                res.status(200).send(JSON.stringify(sample_utxo));
+            let amount: sdk.JSBI;
+            if (req.query.amount === undefined) {
+                res.status(400).send(`Parameters 'amount' is not entered.`);
+                return;
+            } else if (!sdk.Utils.isPositiveInteger(req.query.amount.toString())) {
+                res.status(400).send(`Invalid value for parameter 'amount': ${req.query.amount.toString()}`);
+                return;
+            }
+            amount = sdk.JSBI.BigInt(req.query.amount.toString());
+
+            // Balance Type (0: Spendable; 1: Frozen; 2: Locked)
+            let balance_type: number;
+            if (req.query.type !== undefined) {
+                balance_type = Number(req.query.type.toString());
+            } else {
+                balance_type = 0;
+            }
+
+            // Last UTXO in previous request
+            let last_utxo: sdk.Hash | undefined;
+            if (req.query.last !== undefined) {
+                try {
+                    last_utxo = new sdk.Hash(String(req.query.last));
+                } catch (error) {
+                    res.status(400).send(`Invalid value for parameter 'last': ${req.query.last.toString()}`);
+                    return;
+                }
+            } else {
+                last_utxo = undefined;
+            }
+
+            if (sample_utxo_address !== address.toString()) {
+                res.status(200).send(JSON.stringify([]));
                 return;
             }
 
-            res.status(200).send(JSON.stringify([]));
+            let include = false;
+            let sum = sdk.JSBI.BigInt(0);
+            let utxos: any[] = sample_utxo
+                .filter((m) => {
+                    if (balance_type == 0 && (m.type === 0 || m.type === 2)) return true;
+                    else return balance_type == 1 && m.type === 1;
+                })
+                .filter((m) => {
+                    if (last_utxo === undefined) return true;
+                    if (include) return true;
+                    include = last_utxo.toString() === m.utxo;
+                })
+                .filter((n) => {
+                    if (sdk.JSBI.greaterThanOrEqual(sum, amount)) return false;
+                    sum = sdk.JSBI.add(sum, sdk.JSBI.BigInt(n.amount));
+                    return true;
+                });
+
+            res.status(200).send(JSON.stringify(utxos));
         });
 
         // http://localhost/transaction/fees

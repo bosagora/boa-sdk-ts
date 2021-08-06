@@ -25,7 +25,7 @@ import { TxBuilder } from "../utils/TxBuilder";
 import { TxCanceller, TxCancelResultCode } from "../utils/TxCanceller";
 import { TxPayloadFee } from "../utils/TxPayloadFee";
 import { Utils } from "../utils/Utils";
-import { UTXOManager } from "../utils/UTXOManager";
+import { UTXOManager, UTXOProvider } from "../utils/UTXOManager";
 
 import JSBI from "jsbi";
 
@@ -119,7 +119,7 @@ export class Wallet {
      * The instance of UTXOManager
      * @private
      */
-    private utxoManager: UTXOManager;
+    private utxoProvider: UTXOProvider;
 
     /**
      * The instance of TxBuilder
@@ -147,7 +147,7 @@ export class Wallet {
         this.option = option;
         this.client = new BOAClient(this.option.stoaEndpoint, this.option.agoraEndpoint);
         this.txBuilder = new TxBuilder(this.owner);
-        this.utxoManager = new UTXOManager([]);
+        this.utxoProvider = new UTXOProvider(this.owner.address, this.client);
         this.checked_time = new Date(0);
     }
 
@@ -165,15 +165,6 @@ export class Wallet {
             default:
                 return JSBI.BigInt(fees.medium);
         }
-    }
-
-    /**
-     * After receiving the UTXO from Stoa, it is stored in the internal cache.
-     * @private
-     */
-    private async addUXO() {
-        const utxos = await this.client.getUTXOs(this.owner.address);
-        this.utxoManager.add(utxos);
     }
 
     /**
@@ -242,22 +233,6 @@ export class Wallet {
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
         const payloadLength = payload === undefined ? 0 : payload.length;
-        let blockHeight: JSBI;
-
-        // Request the height of the block in Stoa
-        try {
-            blockHeight = await this.client.getBlockHeight();
-        } catch (e) {
-            return { code: WalletResultCode.FailedRequestHeight, message: e.message };
-        }
-
-        // Request a UTXO.
-        try {
-            await this.addUXO();
-        } catch (e) {
-            return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
-        }
-
         const payloadFee = TxPayloadFee.getFee(payloadLength);
         const sendBOA = receiver.reduce<JSBI>((sum, value) => JSBI.add(sum, value.amount), JSBI.BigInt(0));
         const outputCount = receiver.length + 1;
@@ -268,11 +243,15 @@ export class Wallet {
         let totalSpendAmount = JSBI.add(totalFee, sendBOA);
 
         // Extract the UTXO to be spent.
-        const utxosToSpend = this.utxoManager.getUTXO(
-            totalSpendAmount,
-            blockHeight,
-            JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
-        );
+        let utxosToSpend: UnspentTxOutput[];
+        try {
+            utxosToSpend = await this.utxoProvider.getUTXO(
+                totalSpendAmount,
+                JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
+            );
+        } catch (e) {
+            return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
+        }
 
         if (utxosToSpend.length === 0) {
             return { code: WalletResultCode.NotEnoughAmount, message: "Not enough amount." };
@@ -310,11 +289,15 @@ export class Wallet {
         // If the sum of the already extracted UTXO is less than the transfer amount including the fee, a new UTXO is added
         while (JSBI.lessThan(sumAmountUtxo, totalSpendAmount)) {
             // Add additional UTXO for the required amount.
-            const moreUtxosToSpend = this.utxoManager.getUTXO(
-                JSBI.subtract(totalSpendAmount, sumAmountUtxo),
-                blockHeight,
-                JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
-            );
+            let moreUtxosToSpend: UnspentTxOutput[];
+            try {
+                moreUtxosToSpend = await this.utxoProvider.getUTXO(
+                    JSBI.subtract(totalSpendAmount, sumAmountUtxo),
+                    JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
+                );
+            } catch (e) {
+                return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
+            }
 
             if (moreUtxosToSpend.length === 0) {
                 return { code: WalletResultCode.NotEnoughAmount, message: "Not enough amount." };
@@ -514,12 +497,5 @@ export class Wallet {
             return { code: WalletResultCode.FailedRequestPendingTransaction, message: e.message };
         }
         return this.cancel(tx, key_finder);
-    }
-
-    /**
-     * Removes all data in the UTXO cache.
-     */
-    public clearUTXOCache() {
-        this.utxoManager.clear();
     }
 }
