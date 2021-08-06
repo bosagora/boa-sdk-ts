@@ -33,7 +33,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Freeze,
                 sdk.JSBI.BigInt(1),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(0)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -41,7 +42,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(2),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(1)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -49,7 +51,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(3),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(2)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -57,7 +60,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(4),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(3)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -65,7 +69,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(5),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(4)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -73,7 +78,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(6),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(5)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -81,7 +87,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(7),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(6)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -89,7 +96,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(8),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(7)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -97,7 +105,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(9),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(8)
             ),
             new sdk.UnspentTxOutput(
                 new sdk.Hash(
@@ -105,7 +114,8 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Coinbase,
                 sdk.JSBI.BigInt(10),
-                sdk.JSBI.BigInt(10)
+                sdk.JSBI.BigInt(10),
+                sdk.JSBI.BigInt(9)
             ),
         ];
         manager = new sdk.UTXOManager(utxos);

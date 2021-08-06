@@ -19,6 +19,7 @@
 import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
 import { OutputType } from "../data/TxOutput";
 import { Hash } from "../common/Hash";
+import { Utils } from "./Utils";
 
 import JSBI from "jsbi";
 
@@ -56,14 +57,14 @@ export class UTXOManager {
         this.items.push(
             ...data
                 .filter((n) => this.items.find((m) => m.utxo.data.compare(n.utxo.data) === 0) === undefined)
-                .map((n) => new InternalUTXO(n.utxo, n.type, n.unlock_height, n.amount))
+                .map((n) => new InternalUTXO(n.utxo, n.type, n.unlock_height, n.amount, n.height))
         );
 
         if (this.items.length > old_length)
             this.items.sort((a, b) => {
                 let cmp = (a: JSBI, b: JSBI) => (JSBI.greaterThan(a, b) ? 1 : JSBI.lessThan(a, b) ? -1 : 0);
-                if (JSBI.notEqual(a.unlock_height, b.unlock_height)) return cmp(a.unlock_height, b.unlock_height);
-                return cmp(a.amount, b.amount);
+                if (JSBI.notEqual(a.height, b.height)) return cmp(a.height, b.height);
+                return Utils.compareBuffer(a.utxo.data, b.utxo.data);
             });
     }
 
@@ -145,7 +146,7 @@ export class UTXOManager {
                 target_amount = JSBI.add(target_amount, estimated_input_fee);
                 return true;
             })
-            .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount));
+            .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount, n.height));
     }
 
     /**
@@ -171,9 +172,10 @@ class InternalUTXO extends UnspentTxOutput {
      * @param type          The type of the transaction
      * @param unlock_height The height of the block that can be used
      * @param amount        The monetary value of UTXO
+     * @param height        The block height
      */
-    constructor(utxo: Hash, type: OutputType, unlock_height: JSBI, amount: JSBI) {
-        super(utxo, type, unlock_height, amount);
+    constructor(utxo: Hash, type: OutputType, unlock_height: JSBI, amount: JSBI, height: JSBI) {
+        super(utxo, type, unlock_height, amount, height);
 
         if (JSBI.lessThanOrEqual(this.unlock_height, JSBI.BigInt(0)))
             throw new Error(`Positive unlock_height expected, not ${unlock_height.toString()}`);
