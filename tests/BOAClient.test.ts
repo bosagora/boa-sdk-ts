@@ -677,6 +677,67 @@ export class TestStoa {
             res.status(400).send();
         });
 
+        // GET /wallet/utxo/:address
+        this.app.get("/wallet/utxo/:address", (req: express.Request, res: express.Response) => {
+            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+
+            let amount: sdk.JSBI;
+            if (req.query.amount === undefined) {
+                res.status(400).send(`Parameters 'amount' is not entered.`);
+                return;
+            } else if (!sdk.Utils.isPositiveInteger(req.query.amount.toString())) {
+                res.status(400).send(`Invalid value for parameter 'amount': ${req.query.amount.toString()}`);
+                return;
+            }
+            amount = sdk.JSBI.BigInt(req.query.amount.toString());
+
+            // Balance Type (0: Spendable; 1: Frozen; 2: Locked)
+            let balance_type: number;
+            if (req.query.type !== undefined) {
+                balance_type = Number(req.query.type.toString());
+            } else {
+                balance_type = 0;
+            }
+
+            // Last UTXO in previous request
+            let last_utxo: sdk.Hash | undefined;
+            if (req.query.last !== undefined) {
+                try {
+                    last_utxo = new sdk.Hash(String(req.query.last));
+                } catch (error) {
+                    res.status(400).send(`Invalid value for parameter 'last': ${req.query.last.toString()}`);
+                    return;
+                }
+            } else {
+                last_utxo = undefined;
+            }
+
+            if (sample_utxo_address !== address.toString()) {
+                res.status(200).send(JSON.stringify([]));
+                return;
+            }
+
+            let include = false;
+            let sum = sdk.JSBI.BigInt(0);
+            let utxos: any[] = sample_utxo
+                .filter((m) => {
+                    if (balance_type == 0 && (m.type === 0 || m.type === 2)) return true;
+                    else return balance_type == 1 && m.type === 1;
+                })
+                .filter((m) => {
+                    if (last_utxo === undefined) return true;
+                    if (include) return true;
+                    include = last_utxo.toString() === m.utxo;
+                })
+                .filter((n) => {
+                    if (sdk.JSBI.greaterThanOrEqual(sum, amount)) return false;
+                    sum = sdk.JSBI.add(sum, sdk.JSBI.BigInt(n.amount));
+                    return true;
+                });
+
+            res.status(200).send(JSON.stringify(utxos));
+        });
+
         this.app.set("port", this.port);
 
         // Listen on provided this.port on this.address.
@@ -1701,5 +1762,34 @@ describe("BOA Client", () => {
         assert.deepStrictEqual(balance.spendable, sdk.JSBI.BigInt(1800000));
         assert.deepStrictEqual(balance.frozen, sdk.JSBI.BigInt(200000));
         assert.deepStrictEqual(balance.locked, sdk.JSBI.BigInt(0));
+    });
+
+    it("Test a function of the BOA Client - `getWalletUTXO`", async () => {
+        // Set URL
+        let stoa_uri = URI("http://localhost").port(stoa_port);
+        let agora_uri = URI("http://localhost").port(agora_port);
+
+        // Create BOA Client
+        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+
+        // Query
+        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+
+        // Request First UTXO
+        let first_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 0);
+        assert.deepStrictEqual(first_utxos.length, 2);
+        assert.deepStrictEqual(first_utxos[0].utxo.toString(), sample_utxo[1].utxo);
+        assert.deepStrictEqual(first_utxos[1].utxo.toString(), sample_utxo[2].utxo);
+
+        // Request Second UTXO
+        let second_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 0, first_utxos[1].utxo);
+        assert.deepStrictEqual(second_utxos.length, 2);
+        assert.deepStrictEqual(second_utxos[0].utxo.toString(), sample_utxo[3].utxo);
+        assert.deepStrictEqual(second_utxos[1].utxo.toString(), sample_utxo[4].utxo);
+
+        // Request Frozen UTXO
+        let third_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 1);
+        assert.deepStrictEqual(third_utxos.length, 1);
+        assert.deepStrictEqual(third_utxos[0].utxo.toString(), sample_utxo[0].utxo);
     });
 });

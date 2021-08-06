@@ -505,6 +505,46 @@ export class BOAClient {
     }
 
     /**
+     * Request UTXOs of public key
+     * @param address The address of UTXOs
+     * @param amount  The amount required
+     * @param type    The type of balance (0: spendable, 1: frozen, 2: locked)
+     * @param last    The last UTXO hash of previous inquiries.
+     * The first time request, this value is undefined.
+     * @returns Promise that resolves or
+     * rejects with response from the Stoa
+     */
+    public getWalletUTXOs(
+        address: PublicKey,
+        amount: JSBI,
+        type: number,
+        last?: Hash
+    ): Promise<Array<UnspentTxOutput>> {
+        return new Promise<Array<UnspentTxOutput>>((resolve, reject) => {
+            let url = uri(this.server_url)
+                .directory("wallet/utxo")
+                .filename(address.toString())
+                .addSearch("amount", amount.toString())
+                .addSearch("type", type);
+            if (last !== undefined) url.addSearch("last", last.toString());
+
+            Request.get(url.toString())
+                .then((response: AxiosResponse) => {
+                    let utxos: Array<UnspentTxOutput> = new Array<UnspentTxOutput>();
+                    response.data.forEach((elem: any) => {
+                        let utxo = new UnspentTxOutput();
+                        utxo.fromJSON(elem);
+                        utxos.push(utxo);
+                    });
+                    resolve(utxos);
+                })
+                .catch((reason: any) => {
+                    reject(handleNetworkError(reason));
+                });
+        });
+    }
+
+    /**
      * Request a balance based on the address.
      * @param address The address
      * @returns Promise that resolves or
