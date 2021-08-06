@@ -44,7 +44,7 @@ export { Utils, Endian, ArrayRange, iota } from "./modules/utils/Utils";
 export { SodiumHelper } from "./modules/utils/SodiumHelper";
 export { checksum, validate } from "./modules/utils/CRC16";
 export { TxPayloadFee } from "./modules/utils/TxPayloadFee";
-export { UTXOManager } from "./modules/utils/UTXOManager";
+export { UTXOManager, UTXOProvider } from "./modules/utils/UTXOManager";
 export { TxBuilder, RawInput } from "./modules/utils/TxBuilder";
 export { TxCanceller, TxCancelResultCode, ITxCancelResult } from "./modules/utils/TxCanceller";
 export { VarInt } from "./modules/utils/VarInt";

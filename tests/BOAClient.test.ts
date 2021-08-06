@@ -1792,4 +1792,31 @@ describe("BOA Client", () => {
         assert.deepStrictEqual(third_utxos.length, 1);
         assert.deepStrictEqual(third_utxos[0].utxo.toString(), sample_utxo[0].utxo);
     });
+
+    it("Test the UTXOProvider", async () => {
+        // Set URL
+        let stoa_uri = URI("http://localhost").port(stoa_port);
+        let agora_uri = URI("http://localhost").port(agora_port);
+
+        // Create BOA Client
+        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+
+        // Query
+        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+
+        let utxoProvider = new sdk.UTXOProvider(public_key, boa_client);
+        // Request First UTXO
+        let first_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
+        assert.deepStrictEqual(first_utxos.length, 3);
+        assert.deepStrictEqual(first_utxos[0].utxo.toString(), sample_utxo[1].utxo);
+        assert.deepStrictEqual(first_utxos[1].utxo.toString(), sample_utxo[2].utxo);
+        assert.deepStrictEqual(first_utxos[2].utxo.toString(), sample_utxo[3].utxo);
+
+        // Request Second UTXO
+        let second_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
+        assert.deepStrictEqual(second_utxos.length, 3);
+        assert.deepStrictEqual(second_utxos[0].utxo.toString(), sample_utxo[4].utxo);
+        assert.deepStrictEqual(second_utxos[1].utxo.toString(), sample_utxo[5].utxo);
+        assert.deepStrictEqual(second_utxos[2].utxo.toString(), sample_utxo[6].utxo);
+    });
 });
