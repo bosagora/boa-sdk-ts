@@ -13,7 +13,7 @@
 
 import { SmartBuffer } from "smart-buffer";
 import { VarInt } from "../utils/VarInt";
-import { iota } from "../utils/Utils";
+import { iota, Utils } from "../utils/Utils";
 
 /**
  * The class that defines the BitMask
@@ -151,7 +151,7 @@ export class BitMask {
      */
     public static deserialize(buffer: SmartBuffer): BitMask {
         const length = VarInt.toNumber(buffer);
-        const bytes = buffer.readBuffer(VarInt.toNumber(buffer));
+        const bytes = Utils.readBuffer(buffer, VarInt.toNumber(buffer));
 
         return new BitMask(length, bytes);
     }
