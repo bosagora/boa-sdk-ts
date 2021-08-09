@@ -14,7 +14,7 @@
 import { BitMask } from "./BitMask";
 import { Enrollment } from "./Enrollment";
 import { JSONValidator } from "../utils/JSONValidator";
-import { Hash } from "../common/Hash";
+import { Hash, hashPart } from "../common/Hash";
 import { Height } from "../common/Height";
 import { Signature } from "../common/Signature";
 import { Utils, iota } from "../utils/Utils";
@@ -147,9 +147,7 @@ export class BlockHeader {
         for (let elem of this.enrollments) elem.computeHash(buffer);
         this.random_seed.computeHash(buffer);
         for (let elem of this.missing_validators) buffer.writeUInt32LE(elem);
-        const buf = Buffer.allocUnsafe(8);
-        Utils.writeJSBigIntLE(buf, JSBI.BigInt(this.time_offset));
-        buffer.writeBuffer(buf);
+        hashPart(JSBI.BigInt(this.time_offset), buffer);
     }
 
     /**

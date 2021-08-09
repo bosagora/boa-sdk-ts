@@ -11,6 +11,7 @@
 
 *******************************************************************************/
 
+import { hashPart } from "../common/Hash";
 import { JSONValidator } from "../utils/JSONValidator";
 import { PublicKey } from "../common/KeyPair";
 import { Utils } from "../utils/Utils";
@@ -88,12 +89,8 @@ export class TxOutput {
      */
     public computeHash(buffer: SmartBuffer) {
         buffer.writeUInt32LE(this.type);
-
         this.lock.computeHash(buffer);
-
-        const buf = Buffer.allocUnsafe(8);
-        Utils.writeJSBigIntLE(buf, this.value);
-        buffer.writeBuffer(buf);
+        hashPart(this.value, buffer);
     }
 
     /**

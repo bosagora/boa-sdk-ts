@@ -11,11 +11,12 @@
 
 *******************************************************************************/
 
+import { hashPart } from "./Hash";
 import { SmartBuffer } from "smart-buffer";
-import { Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
 
 import JSBI from "jsbi";
+
 /**
  * The class that defines the Height.
  */
@@ -38,9 +39,7 @@ export class Height {
      * @param buffer The buffer where collected data is stored
      */
     public computeHash(buffer: SmartBuffer) {
-        const buf = Buffer.allocUnsafe(8);
-        Utils.writeJSBigIntLE(buf, this.value);
-        buffer.writeBuffer(buf);
+        hashPart(this.value, buffer);
     }
 
     /**

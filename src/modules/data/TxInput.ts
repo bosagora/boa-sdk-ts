@@ -12,7 +12,7 @@
 *******************************************************************************/
 
 import { JSONValidator } from "../utils/JSONValidator";
-import { Hash, makeUTXOKey } from "../common/Hash";
+import { Hash, hashPart, makeUTXOKey } from "../common/Hash";
 import { Signature } from "../common/Signature";
 import { Unlock } from "../script/Lock";
 import { Utils } from "../utils/Utils";
@@ -87,7 +87,7 @@ export class TxInput {
      */
     public computeHash(buffer: SmartBuffer) {
         this.utxo.computeHash(buffer);
-        buffer.writeUInt32LE(this.unlock_age);
+        hashPart(this.unlock_age, buffer);
     }
 
     /**

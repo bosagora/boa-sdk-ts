@@ -102,7 +102,7 @@ export class Transaction {
         hashPart(this.inputs, buffer);
         hashPart(this.outputs, buffer);
         hashPart(this.payload, buffer);
-        this.lock_height.computeHash(buffer);
+        hashPart(this.lock_height, buffer);
     }
 
     /**

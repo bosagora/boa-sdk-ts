@@ -12,7 +12,7 @@
 *******************************************************************************/
 
 import { JSONValidator } from "../utils/JSONValidator";
-import { Hash } from "../common/Hash";
+import { Hash, hashPart } from "../common/Hash";
 import { Signature } from "../common/Signature";
 import { Sig } from "../common/Schnorr";
 import { VarInt } from "../utils/VarInt";
@@ -89,7 +89,7 @@ export class Enrollment {
     public computeHash(buffer: SmartBuffer) {
         this.utxo_key.computeHash(buffer);
         this.commitment.computeHash(buffer);
-        buffer.writeUInt32LE(this.cycle_length);
+        hashPart(this.cycle_length, buffer);
     }
 
     /**
