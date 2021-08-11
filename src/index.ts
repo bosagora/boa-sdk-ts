@@ -51,6 +51,7 @@ export { VarInt } from "./modules/utils/VarInt";
 
 export { JSONValidator } from "./modules/utils/JSONValidator";
 
+export { Balance } from "./modules/net/response/Balance";
 export { UnspentTxOutput } from "./modules/net/response/UnspentTxOutput";
 export { Validator } from "./modules/net/response/Validator";
 export { PreImage } from "./modules/net/response/PreImage";
