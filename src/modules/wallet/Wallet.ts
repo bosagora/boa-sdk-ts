@@ -51,6 +51,7 @@ export enum WalletResultCode {
     FailedRequestUTXO,
     FailedRequestTxFee,
     InvalidTransaction,
+    CoinbaseCanNotCancel,
     UnsupportedUnfreezing,
     NotFoundUTXO,
     UnsupportedLockType,
@@ -373,6 +374,14 @@ export class Wallet {
      * @param key_finder A function that finds KeyPairs that can consume UTXOs and returns them to an array.
      */
     public async cancel(tx: Transaction, key_finder?: (addresses: PublicKey[]) => KeyPair[]): Promise<IWalletResult> {
+        if (tx.isCoinbase()) {
+            return {
+                code: WalletResultCode.CoinbaseCanNotCancel,
+                message: "Transactions of type Coinbase cannot be canceled.",
+                original_tx: tx,
+            };
+        }
+
         const check_res: IWalletResult = await this.checkServer();
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
