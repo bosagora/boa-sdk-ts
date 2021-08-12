@@ -80,7 +80,7 @@ export class ProposalData {
     public proposal_fee: JSBI;
 
     /**
-     * The voting fee
+     * The total amount of voting costs provided to the validator
      */
     public vote_fee: JSBI;
 
@@ -110,7 +110,7 @@ export class ProposalData {
      * @param doc_hash              The hash of the documentation
      * @param fund_amount           The amount of the funding
      * @param proposal_fee          The proposal fee
-     * @param vote_fee              The voting fee
+     * @param vote_fee              The total amount of voting costs provided to the validator.
      * @param tx_hash_proposal_fee  Hash of transactions that paid the funding fee
      * @param proposer_address      Proposer's own public address
      * @param proposal_fee_address  Public address to deposit the proposal fee
