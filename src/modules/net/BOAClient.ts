@@ -25,7 +25,7 @@ import { handleNetworkError } from "./error/ErrorTypes";
 import { Request } from "./Request";
 import { Balance } from "./response/Balance";
 import { TransactionFee } from "./response/TrasactionFee";
-import { IPendingTxs, ISPVStatus, ITxHistoryElement, ITxOverview } from "./response/Types";
+import { BalanceType, IPendingTxs, ISPVStatus, ITxHistoryElement, ITxOverview } from "./response/Types";
 import { UnspentTxOutput } from "./response/UnspentTxOutput";
 import { Validator } from "./response/Validator";
 
@@ -514,7 +514,12 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getWalletUTXOs(address: PublicKey, amount: JSBI, type: number, last?: Hash): Promise<UnspentTxOutput[]> {
+    public getWalletUTXOs(
+        address: PublicKey,
+        amount: JSBI,
+        type: BalanceType,
+        last?: Hash
+    ): Promise<UnspentTxOutput[]> {
         return new Promise<UnspentTxOutput[]>((resolve, reject) => {
             const url = uri(this.server_url)
                 .directory("wallet/utxo")

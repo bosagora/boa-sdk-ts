@@ -20,6 +20,7 @@ import { Hash } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
 import { OutputType } from "../data/TxOutput";
 import { BOAClient } from "../net/BOAClient";
+import { BalanceType } from "../net/response/Types";
 import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
 import { Utils } from "./Utils";
 
@@ -254,7 +255,12 @@ export class UTXOProvider {
             if (JSBI.greaterThanOrEqual(res_sum, estimated_amount)) break;
 
             target_amount = JSBI.subtract(estimated_amount, res_sum);
-            const additional = await this.client.getWalletUTXOs(this.address, target_amount, 0, this.getLastUTXO());
+            const additional = await this.client.getWalletUTXOs(
+                this.address,
+                target_amount,
+                BalanceType.spendable,
+                this.getLastUTXO()
+            );
             // Not Enough Amount
             if (additional.length === 0) {
                 this.items.forEach((m) => {

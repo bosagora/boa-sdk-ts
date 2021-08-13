@@ -171,3 +171,12 @@ export interface ISPVStatus {
      */
     message: string;
 }
+
+/**
+ * The type of balance
+ */
+export enum BalanceType {
+    spendable = 0,
+    frozen = 1,
+    locked = 2,
+}

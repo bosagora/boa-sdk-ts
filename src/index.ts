@@ -55,8 +55,7 @@ export { Balance } from "./modules/net/response/Balance";
 export { UnspentTxOutput } from "./modules/net/response/UnspentTxOutput";
 export { Validator } from "./modules/net/response/Validator";
 export { PreImage } from "./modules/net/response/PreImage";
-export { ITxHistoryElement, ITxOverview, IPendingTxs } from "./modules/net/response/Types";
-
+export { ITxHistoryElement, ITxOverview, IPendingTxs, BalanceType } from "./modules/net/response/Types";
 export { BOAClient } from "./modules/net/BOAClient";
 export { Request } from "./modules/net/Request";
 
