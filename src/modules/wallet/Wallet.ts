@@ -79,9 +79,6 @@ export interface IWalletResult {
     code: WalletResultCode;
     message: string;
     error?: any;
-    tx?: Transaction;
-    balance?: Balance;
-    original_tx?: Transaction;
     data?: any;
 }
 
@@ -117,7 +114,7 @@ export class Wallet {
      * It is a client to access Agora and Stoa.
      * @private
      */
-    private client: BOAClient;
+    private readonly client: BOAClient;
 
     /**
      * The instance of UTXOManager
@@ -143,8 +140,16 @@ export class Wallet {
      */
     private option: IWalletOption;
 
+    /**
+     * The last time the server status was checked
+     * @private
+     */
     private checked_time: Date;
 
+    /**
+     * Minimum amount of time the server status should be checked
+     * @private
+     */
     private static CHECK_PERIOD = 5000;
 
     /**
@@ -183,8 +188,8 @@ export class Wallet {
      * @private
      */
     private async checkServer(): Promise<IWalletResult> {
-        let now = new Date();
-        let duration = now.valueOf() - this.checked_time.valueOf();
+        const now = new Date();
+        const duration = now.valueOf() - this.checked_time.valueOf();
         this.checked_time = now;
 
         // If it has been more than 5 seconds since the previous server health check, re-check.
@@ -229,7 +234,7 @@ export class Wallet {
         return {
             code: WalletResultCode.Success,
             message: "Success",
-            balance: balance,
+            data: balance,
         };
     }
 
@@ -373,7 +378,7 @@ export class Wallet {
         return {
             code: WalletResultCode.Success,
             message: "Success.",
-            tx,
+            data: tx,
         };
     }
 
@@ -404,7 +409,6 @@ export class Wallet {
             return {
                 code: WalletResultCode.CoinbaseCanNotCancel,
                 message: "Transactions of type Coinbase cannot be canceled.",
-                original_tx: tx,
             };
         }
 
@@ -416,7 +420,7 @@ export class Wallet {
         try {
             utxos = await this.client.getUTXOInfo(tx.inputs.map((m) => m.utxo));
         } catch (e) {
-            return { code: WalletResultCode.FailedRequestUTXO, message: e.message, original_tx: tx };
+            return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
         }
 
         let key_pairs: KeyPair[];
@@ -440,43 +444,37 @@ export class Wallet {
                 return {
                     code: WalletResultCode.UnsupportedUnfreezing,
                     message: "Unfreeze transactions cannot be canceled.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
             case TxCancelResultCode.InvalidTransaction:
                 return {
                     code: WalletResultCode.InvalidTransaction,
                     message: "This transaction is invalid and cannot be canceled.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
             case TxCancelResultCode.NotFoundUTXO:
                 return {
                     code: WalletResultCode.NotFoundUTXO,
                     message: "UTXO information not found.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
             case TxCancelResultCode.UnsupportedLockType:
                 return {
                     code: WalletResultCode.UnsupportedLockType,
                     message: "This LockType not supported by cancel feature.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
             case TxCancelResultCode.NotFoundKey:
                 return {
                     code: WalletResultCode.NotFoundKey,
                     message: "Secret key not found.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
             case TxCancelResultCode.NotEnoughFee:
                 return {
                     code: WalletResultCode.NotEnoughFee,
                     message: "Not enough fees are needed to cancel.",
-                    original_tx: tx,
-                    tx: res.tx,
+                    data: res.tx,
                 };
         }
 
@@ -488,20 +486,17 @@ export class Wallet {
                 return {
                     code: WalletResultCode.FailedSendTx,
                     message: e.message,
-                    original_tx: tx,
                 };
             }
             return {
                 code: WalletResultCode.Success,
                 message: "Success.",
-                original_tx: tx,
-                tx: res.tx,
+                data: res.tx,
             };
         } else {
             return {
                 code: WalletResultCode.UnknownError,
                 message: "Unknown error occurred.",
-                original_tx: tx,
             };
         }
     }
@@ -599,7 +594,7 @@ export class Wallet {
         return {
             code: WalletResultCode.Success,
             message: "Success.",
-            tx,
+            data: tx,
         };
     }
 

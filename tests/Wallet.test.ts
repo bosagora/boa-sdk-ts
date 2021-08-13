@@ -503,13 +503,13 @@ describe("Wallet", () => {
 
         const res = await wallet.getBalance();
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.balance !== undefined);
+        assert.ok(res.data !== undefined);
 
-        assert.deepStrictEqual(res.balance.address, "boa1xza007gllhzdawnr727hds36guc0frnjsqscgf4k08zqesapcg3uujh9g93");
-        assert.deepStrictEqual(res.balance.balance, sdk.JSBI.BigInt(20000000000));
-        assert.deepStrictEqual(res.balance.spendable, sdk.JSBI.BigInt(18000000000));
-        assert.deepStrictEqual(res.balance.frozen, sdk.JSBI.BigInt(2000000000));
-        assert.deepStrictEqual(res.balance.locked, sdk.JSBI.BigInt(0));
+        assert.deepStrictEqual(res.data.address, "boa1xza007gllhzdawnr727hds36guc0frnjsqscgf4k08zqesapcg3uujh9g93");
+        assert.deepStrictEqual(res.data.balance, sdk.JSBI.BigInt(20000000000));
+        assert.deepStrictEqual(res.data.spendable, sdk.JSBI.BigInt(18000000000));
+        assert.deepStrictEqual(res.data.frozen, sdk.JSBI.BigInt(2000000000));
+        assert.deepStrictEqual(res.data.locked, sdk.JSBI.BigInt(0));
     });
 
     it("Test the Wallet - transfer", async () => {
@@ -533,7 +533,7 @@ describe("Wallet", () => {
         const expected = {
             code: 0,
             message: "Success",
-            tx: {
+            data: {
                 inputs: [
                     {
                         utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -561,9 +561,9 @@ describe("Wallet", () => {
         };
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.tx !== undefined);
-        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
-        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+        assert.ok(res.data !== undefined);
+        assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
 
     it("Test the Wallet - transfer - Fail access to Agora", async () => {
@@ -585,7 +585,7 @@ describe("Wallet", () => {
         ]);
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.FailedAccessToAgora);
-        assert.ok(res.tx === undefined);
+        assert.ok(res.data === undefined);
     });
 
     it("Test the Wallet - transfer - Fail access to Stoa", async () => {
@@ -607,7 +607,7 @@ describe("Wallet", () => {
         ]);
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.FailedAccessToStoa);
-        assert.ok(res.tx === undefined);
+        assert.ok(res.data === undefined);
     });
 
     it("Test the Wallet - transfer - Not Enough Amount", async () => {
@@ -629,7 +629,7 @@ describe("Wallet", () => {
         ]);
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.NotEnoughAmount);
-        assert.ok(res.tx === undefined);
+        assert.ok(res.data === undefined);
     });
 
     it("Test the Wallet - cancel", async () => {
@@ -652,7 +652,7 @@ describe("Wallet", () => {
         const expected = {
             code: 0,
             message: "Success",
-            tx: {
+            data: {
                 inputs: [
                     {
                         utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -678,10 +678,10 @@ describe("Wallet", () => {
         };
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.tx !== undefined);
+        assert.ok(res.data !== undefined);
 
-        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
-        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+        assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
 
     it("Test the Wallet - cancel with a transaction hash", async () => {
@@ -700,7 +700,7 @@ describe("Wallet", () => {
         const expected = {
             code: 0,
             message: "Success",
-            tx: {
+            data: {
                 inputs: [
                     {
                         utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -726,10 +726,10 @@ describe("Wallet", () => {
         };
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.tx !== undefined);
+        assert.ok(res.data !== undefined);
 
-        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
-        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+        assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
 
     it("Test the Wallet - freeze", async () => {
@@ -751,7 +751,7 @@ describe("Wallet", () => {
         const expected = {
             code: 0,
             message: "Success",
-            tx: {
+            data: {
                 inputs: [
                     {
                         utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -779,9 +779,9 @@ describe("Wallet", () => {
         };
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.tx !== undefined);
-        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
-        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+        assert.ok(res.data !== undefined);
+        assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
 
     it("Test the Wallet - unfreeze", async () => {
@@ -807,7 +807,7 @@ describe("Wallet", () => {
         const expected = {
             code: 0,
             message: "Success.",
-            tx: {
+            data: {
                 inputs: [
                     {
                         utxo: "0x6d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0",
@@ -830,9 +830,9 @@ describe("Wallet", () => {
         };
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
-        assert.ok(res.tx !== undefined);
-        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
-        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+        assert.ok(res.data !== undefined);
+        assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
 
     it("Test the Wallet - getFrozenUTXOs", async () => {
@@ -846,9 +846,9 @@ describe("Wallet", () => {
             fee: sdk.WalletFeeOption.Medium,
         });
         const balance_res = await wallet.getBalance();
-        assert.ok(balance_res.balance !== undefined);
+        assert.ok(balance_res.data !== undefined);
 
-        const res = await wallet.getFrozenUTXOs(balance_res.balance.frozen);
+        const res = await wallet.getFrozenUTXOs(balance_res.data.frozen);
         assert.deepStrictEqual(res.data.length, 1);
         assert.deepStrictEqual(
             res.data[0].utxo.toString(),
