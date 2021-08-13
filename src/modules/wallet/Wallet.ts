@@ -226,10 +226,16 @@ export class Wallet {
     /**
      * Transfer the BOA corresponding to the amount to the receiver.
      * The payload is the data to be stored in the block. A separate cost is incurred.
+     * @param output_type The type of transaction output (0: OutputType.Payment, 1: OutputType.Freeze)
      * @param receiver  The array of recipient information
      * @param payload   The data to be stored, not used if not entered.
+     * @private
      */
-    private async _transfer(receiver: IWalletReceiver[], payload?: Buffer): Promise<IWalletResult> {
+    private async _transfer(
+        output_type: OutputType,
+        receiver: IWalletReceiver[],
+        payload?: Buffer
+    ): Promise<IWalletResult> {
         const check_res: IWalletResult = await this.checkServer();
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
@@ -268,7 +274,7 @@ export class Wallet {
 
         // Build a transaction
         receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-        let tx = this.txBuilder.sign(OutputType.Payment, estimatedTxFee, payloadFee);
+        let tx = this.txBuilder.sign(output_type, estimatedTxFee, payloadFee);
 
         // Get the size of the transaction
         let txSize = tx.getNumberOfBytes();
@@ -315,7 +321,7 @@ export class Wallet {
 
             // Build a transaction
             receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-            tx = this.txBuilder.sign(OutputType.Payment, txFee, payloadFee);
+            tx = this.txBuilder.sign(output_type, txFee, payloadFee);
 
             // Get the size of the transaction
             txSize = tx.getNumberOfBytes();
@@ -343,7 +349,7 @@ export class Wallet {
 
         // Build a transaction
         receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-        tx = this.txBuilder.sign(OutputType.Payment, txFee, payloadFee);
+        tx = this.txBuilder.sign(output_type, txFee, payloadFee);
 
         try {
             await this.client.sendTransaction(tx);
@@ -368,7 +374,7 @@ export class Wallet {
      * @param payload   The data to be stored, not used if not entered.
      */
     public async transfer(receiver: IWalletReceiver[], payload?: Buffer): Promise<IWalletResult> {
-        return this._transfer(receiver, payload);
+        return this._transfer(OutputType.Payment, receiver, payload);
     }
 
     /**
@@ -516,5 +522,13 @@ export class Wallet {
             return { code: WalletResultCode.FailedRequestPendingTransaction, message: e.message };
         }
         return this.cancel(tx, key_finder);
+    }
+
+    /**
+     * Freeze the funds specified at the specified address.
+     * @param receiver It is an object that has a receiving address and amount.
+     */
+    public async freeze(receiver: IWalletReceiver): Promise<IWalletResult> {
+        return this._transfer(OutputType.Freeze, [receiver]);
     }
 }

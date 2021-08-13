@@ -731,4 +731,56 @@ describe("Wallet", () => {
         assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
         assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
     });
+
+    it("Test the Wallet - freeze", async () => {
+        const keypair = sdk.KeyPair.fromSeed(
+            new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
+        );
+
+        const wallet = new sdk.Wallet(keypair, {
+            agoraEndpoint: "http://localhost:6000",
+            stoaEndpoint: "http://localhost:7000",
+            fee: sdk.WalletFeeOption.Medium,
+        });
+
+        const res = await wallet.freeze({
+            address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
+            amount: sdk.JSBI.BigInt(100000000),
+        });
+
+        const expected = {
+            code: 0,
+            message: "Success",
+            tx: {
+                inputs: [
+                    {
+                        utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
+                        unlock: {
+                            bytes: "ihKCEMuCl9PXfhrsUQMEmmXMEIW0exrKvx5PLg7o8Qg3oN+NMCIbW4mDpQVY/yWmegg8RYuODrceVgxnUDMgCw==",
+                        },
+                        unlock_age: 0,
+                    },
+                ],
+                outputs: [
+                    {
+                        type: 0,
+                        value: "1899900000",
+                        lock: { type: 0, bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=" },
+                    },
+                    {
+                        type: 1,
+                        value: "100000000",
+                        lock: { type: 0, bytes: "8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8=" },
+                    },
+                ],
+                payload: "",
+                lock_height: "0",
+            },
+        };
+
+        assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
+        assert.ok(res.tx !== undefined);
+        assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
+        assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
+    });
 });
