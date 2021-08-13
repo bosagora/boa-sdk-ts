@@ -19,6 +19,7 @@ import { OutputType } from "../data/TxOutput";
 import { BOAClient } from "../net/BOAClient";
 import { Balance } from "../net/response/Balance";
 import { TransactionFee } from "../net/response/TrasactionFee";
+import { BalanceType } from "../net/response/Types";
 import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
 import { LockType } from "../script/Lock";
 import { TxBuilder } from "../utils/TxBuilder";
@@ -53,6 +54,7 @@ export enum WalletResultCode {
     InvalidTransaction,
     CoinbaseCanNotCancel,
     UnsupportedUnfreezing,
+    ExistNotFrozenUTXO,
     NotFoundUTXO,
     UnsupportedLockType,
     NotFoundKey,
@@ -530,5 +532,66 @@ export class Wallet {
      */
     public async freeze(receiver: IWalletReceiver): Promise<IWalletResult> {
         return this._transfer(OutputType.Freeze, [receiver]);
+    }
+
+    /**
+     * Unfreeze frozen UTXO.
+     * @param utxos     Hashes of frozen UTXO
+     * @param receiver  Public address to receive the unfreeze amount
+     */
+    public async unfreeze(utxos: Hash[], receiver: PublicKey): Promise<IWalletResult> {
+        const check_res: IWalletResult = await this.checkServer();
+        if (check_res.code !== WalletResultCode.Success) return check_res;
+
+        let unspentTxOutputs: UnspentTxOutput[];
+        // Requests the information of the UTXO used in the transaction.
+        try {
+            unspentTxOutputs = await this.client.getUTXOInfo(utxos.map((m) => m));
+        } catch (e) {
+            return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
+        }
+
+        const not_freeze = unspentTxOutputs.some((m) => m.type !== OutputType.Freeze);
+        if (not_freeze) {
+            return { code: WalletResultCode.ExistNotFrozenUTXO, message: "UTXO not frozen exists." };
+        }
+
+        const payloadFee = JSBI.BigInt(0);
+        const outputCount = 1;
+
+        const sumOfUTXO: JSBI = unspentTxOutputs.reduce<JSBI>((sum, u) => JSBI.add(sum, u.amount), JSBI.BigInt(0));
+        const txSize = Transaction.getEstimatedNumberOfBytes(unspentTxOutputs.length, outputCount, 0);
+
+        let fees: TransactionFee;
+        // Fees based on the transaction size is obtained from Stoa.
+        try {
+            fees = await this.client.getTransactionFee(txSize);
+        } catch (e) {
+            return { code: WalletResultCode.FailedRequestTxFee, message: e.message };
+        }
+
+        // Set the fee according to the option of the entered fee.
+        const txFee = this.getFee(fees);
+        const amount: JSBI = JSBI.subtract(sumOfUTXO, txFee);
+
+        unspentTxOutputs.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
+
+        // Build a transaction
+        const tx = this.txBuilder.addOutput(receiver, amount).sign(OutputType.Payment, txFee, payloadFee);
+
+        try {
+            await this.client.sendTransaction(tx);
+        } catch (e) {
+            return {
+                code: WalletResultCode.FailedSendTx,
+                message: e.message,
+            };
+        }
+
+        return {
+            code: WalletResultCode.Success,
+            message: "Success.",
+            tx,
+        };
     }
 }
