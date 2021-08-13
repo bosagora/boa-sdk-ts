@@ -25,7 +25,7 @@ import { TxBuilder } from "../utils/TxBuilder";
 import { TxCanceller, TxCancelResultCode } from "../utils/TxCanceller";
 import { TxPayloadFee } from "../utils/TxPayloadFee";
 import { Utils } from "../utils/Utils";
-import { UTXOManager, UTXOProvider } from "../utils/UTXOManager";
+import { UTXOProvider } from "../utils/UTXOManager";
 
 import JSBI from "jsbi";
 
@@ -229,7 +229,7 @@ export class Wallet {
      * @param receiver  The array of recipient information
      * @param payload   The data to be stored, not used if not entered.
      */
-    public async transfer(receiver: IWalletReceiver[], payload?: Buffer): Promise<IWalletResult> {
+    private async _transfer(receiver: IWalletReceiver[], payload?: Buffer): Promise<IWalletResult> {
         const check_res: IWalletResult = await this.checkServer();
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
@@ -359,6 +359,16 @@ export class Wallet {
             message: "Success.",
             tx,
         };
+    }
+
+    /**
+     * Transfer the BOA corresponding to the amount to the receiver.
+     * The payload is the data to be stored in the block. A separate cost is incurred.
+     * @param receiver  The array of recipient information
+     * @param payload   The data to be stored, not used if not entered.
+     */
+    public async transfer(receiver: IWalletReceiver[], payload?: Buffer): Promise<IWalletResult> {
+        return this._transfer(receiver, payload);
     }
 
     /**
