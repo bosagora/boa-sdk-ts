@@ -82,6 +82,7 @@ export interface IWalletResult {
     tx?: Transaction;
     balance?: Balance;
     original_tx?: Transaction;
+    data?: any;
 }
 
 /**
@@ -122,7 +123,13 @@ export class Wallet {
      * The instance of UTXOManager
      * @private
      */
-    private utxoProvider: UTXOProvider;
+    private spendableUtxoProvider: UTXOProvider;
+
+    /**
+     * The instance of UTXOManager
+     * @private
+     */
+    private frozenUtxoProvider: UTXOProvider;
 
     /**
      * The instance of TxBuilder
@@ -150,7 +157,8 @@ export class Wallet {
         this.option = option;
         this.client = new BOAClient(this.option.stoaEndpoint, this.option.agoraEndpoint);
         this.txBuilder = new TxBuilder(this.owner);
-        this.utxoProvider = new UTXOProvider(this.owner.address, this.client);
+        this.spendableUtxoProvider = new UTXOProvider(this.owner.address, this.client, BalanceType.spendable);
+        this.frozenUtxoProvider = new UTXOProvider(this.owner.address, this.client, BalanceType.frozen);
         this.checked_time = new Date(0);
     }
 
@@ -254,7 +262,7 @@ export class Wallet {
         // Extract the UTXO to be spent.
         let utxosToSpend: UnspentTxOutput[];
         try {
-            utxosToSpend = await this.utxoProvider.getUTXO(
+            utxosToSpend = await this.spendableUtxoProvider.getUTXO(
                 totalSpendAmount,
                 JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
             );
@@ -300,7 +308,7 @@ export class Wallet {
             // Add additional UTXO for the required amount.
             let moreUtxosToSpend: UnspentTxOutput[];
             try {
-                moreUtxosToSpend = await this.utxoProvider.getUTXO(
+                moreUtxosToSpend = await this.spendableUtxoProvider.getUTXO(
                     JSBI.subtract(totalSpendAmount, sumAmountUtxo),
                     JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
                 );
@@ -592,6 +600,27 @@ export class Wallet {
             code: WalletResultCode.Success,
             message: "Success.",
             tx,
+        };
+    }
+
+    /**
+     * Returns an array of all frozen UTXOs for addresses already set
+     */
+    public async getFrozenUTXOs(amount: JSBI): Promise<IWalletResult> {
+        const check_res: IWalletResult = await this.checkServer();
+        if (check_res.code !== WalletResultCode.Success) return check_res;
+
+        let frozenUtxos: UnspentTxOutput[];
+        try {
+            frozenUtxos = await this.frozenUtxoProvider.getUTXO(amount);
+        } catch (e) {
+            return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
+        }
+
+        return {
+            code: WalletResultCode.Success,
+            message: "Success.",
+            data: frozenUtxos,
         };
     }
 }

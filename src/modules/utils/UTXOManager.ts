@@ -183,14 +183,22 @@ export class UTXOProvider {
     private client: BOAClient;
 
     /**
+     * The type of balance (0: Spendable,, 1: Frozen, 2: Locked)
+     * @private
+     */
+    private balance_type: BalanceType;
+
+    /**
      * Constructor
      * @param address The instance of the PublicKey
      * @param client  The instance of the BOAClient
+     * @param balance_type The balance type
      */
-    constructor(address: PublicKey, client: BOAClient) {
+    constructor(address: PublicKey, client: BOAClient, balance_type: BalanceType = BalanceType.spendable) {
         this.address = address;
         this.items = [];
         this.client = client;
+        this.balance_type = balance_type;
     }
 
     /**
@@ -258,7 +266,7 @@ export class UTXOProvider {
             const additional = await this.client.getWalletUTXOs(
                 this.address,
                 target_amount,
-                BalanceType.spendable,
+                this.balance_type,
                 this.getLastUTXO()
             );
             // Not Enough Amount

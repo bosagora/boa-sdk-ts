@@ -834,4 +834,26 @@ describe("Wallet", () => {
         assert.deepStrictEqual(res.tx.inputs[0].utxo.toString(), expected.tx.inputs[0].utxo);
         assert.deepStrictEqual(JSON.stringify(res.tx.outputs), JSON.stringify(expected.tx.outputs));
     });
+
+    it("Test the Wallet - getFrozenUTXOs", async () => {
+        const keypair = sdk.KeyPair.fromSeed(
+            new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
+        );
+
+        const wallet = new sdk.Wallet(keypair, {
+            agoraEndpoint: "http://localhost:6000",
+            stoaEndpoint: "http://localhost:7000",
+            fee: sdk.WalletFeeOption.Medium,
+        });
+        const balance_res = await wallet.getBalance();
+        assert.ok(balance_res.balance !== undefined);
+
+        const res = await wallet.getFrozenUTXOs(balance_res.balance.frozen);
+        assert.deepStrictEqual(res.data.length, 1);
+        assert.deepStrictEqual(
+            res.data[0].utxo.toString(),
+            "0x6d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0"
+        );
+        assert.deepStrictEqual(res.data[0].type, sdk.OutputType.Freeze);
+    });
 });
