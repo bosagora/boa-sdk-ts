@@ -29,8 +29,8 @@ export class Encrypt {
      * @param proposal_id   The ID of proposal
      */
     public static createKey(first_key: Buffer, proposal_id: string): Buffer {
-        let key_proposal = hashMulti(first_key, Buffer.from(proposal_id));
-        let key_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
+        const key_proposal = hashMulti(first_key, Buffer.from(proposal_id));
+        const key_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
 
         return Buffer.from(SodiumHelper.sodium.crypto_generichash(key_size, key_proposal.data));
     }
@@ -41,10 +41,10 @@ export class Encrypt {
      * @param key           The secret key
      */
     public static encrypt(message: Buffer, key: Buffer): Buffer {
-        let public_nonce_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES;
-        let public_nonce = Buffer.from(SodiumHelper.sodium.randombytes_buf(public_nonce_size));
+        const public_nonce_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES;
+        const public_nonce = Buffer.from(SodiumHelper.sodium.randombytes_buf(public_nonce_size));
 
-        let cipher = Buffer.from(
+        const cipher = Buffer.from(
             SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
                 message,
                 Encrypt.additional_data,
@@ -63,9 +63,9 @@ export class Encrypt {
      * @param key               The secret key
      */
     static decrypt(cipher_message: Buffer, key: Buffer): Buffer {
-        let public_nonce_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES;
-        let public_nonce = cipher_message.slice(0, public_nonce_size);
-        let cipher = cipher_message.slice(public_nonce_size);
+        const public_nonce_size = SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES;
+        const public_nonce = cipher_message.slice(0, public_nonce_size);
+        const cipher = cipher_message.slice(public_nonce_size);
 
         return Buffer.from(
             SodiumHelper.sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(

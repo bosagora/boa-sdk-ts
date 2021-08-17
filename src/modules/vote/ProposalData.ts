@@ -190,33 +190,33 @@ export class ProposalData {
      */
     public static deserialize(buffer: SmartBuffer): ProposalData {
         let length = VarInt.toNumber(buffer);
-        let header = Utils.readBuffer(buffer, length);
+        const header = Utils.readBuffer(buffer, length);
         if (header.toString() !== ProposalData.HEADER) throw new Error("This is not the expected data type.");
 
         length = VarInt.toNumber(buffer);
         let temp = Utils.readBuffer(buffer, length);
-        let app_name = temp.toString();
+        const app_name = temp.toString();
 
-        let proposal_type = VarInt.toNumber(buffer);
-
-        length = VarInt.toNumber(buffer);
-        temp = Utils.readBuffer(buffer, length);
-        let proposal_id = temp.toString();
+        const proposal_type = VarInt.toNumber(buffer);
 
         length = VarInt.toNumber(buffer);
         temp = Utils.readBuffer(buffer, length);
-        let proposal_title = temp.toString();
+        const proposal_id = temp.toString();
 
-        let vote_start_height = VarInt.toJSBI(buffer);
-        let vote_end_height = VarInt.toJSBI(buffer);
+        length = VarInt.toNumber(buffer);
+        temp = Utils.readBuffer(buffer, length);
+        const proposal_title = temp.toString();
 
-        let doc_hash = new Hash(Utils.readBuffer(buffer, Hash.Width));
-        let fund_amount = VarInt.toJSBI(buffer);
-        let proposal_fee = VarInt.toJSBI(buffer);
-        let vote_fee = VarInt.toJSBI(buffer);
-        let tx_hash_proposal_fee = new Hash(Utils.readBuffer(buffer, Hash.Width));
-        let proposer_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
-        let proposal_fee_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
+        const vote_start_height = VarInt.toJSBI(buffer);
+        const vote_end_height = VarInt.toJSBI(buffer);
+
+        const doc_hash = new Hash(Utils.readBuffer(buffer, Hash.Width));
+        const fund_amount = VarInt.toJSBI(buffer);
+        const proposal_fee = VarInt.toJSBI(buffer);
+        const vote_fee = VarInt.toJSBI(buffer);
+        const tx_hash_proposal_fee = new Hash(Utils.readBuffer(buffer, Hash.Width));
+        const proposer_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
+        const proposal_fee_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
 
         return new ProposalData(
             app_name,
@@ -243,10 +243,10 @@ export class ProposalData {
      */
     public getLinkData(
         proposer_address: PublicKey,
-        validators: Array<PublicKey>,
+        validators: PublicKey[],
         voting_fee: JSBI
     ): LinkDataWithProposalData {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         this.serialize(buffer);
         return {
             proposer_address: proposer_address.toString(),

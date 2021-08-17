@@ -13,8 +13,8 @@
 *******************************************************************************/
 
 import { PublicKey } from "../common/KeyPair";
-import { VarInt } from "../utils/VarInt";
 import { Utils } from "../utils/Utils";
+import { VarInt } from "../utils/VarInt";
 import { LinkDataWithProposalFee } from "./LinkData";
 
 import JSBI from "jsbi";
@@ -72,16 +72,16 @@ export class ProposalFeeData {
      */
     public static deserialize(buffer: SmartBuffer): ProposalFeeData {
         let length = VarInt.toNumber(buffer);
-        let header = Utils.readBuffer(buffer, length);
+        const header = Utils.readBuffer(buffer, length);
         if (header.toString() !== ProposalFeeData.HEADER) throw new Error("This is not the expected data type.");
 
         length = VarInt.toNumber(buffer);
         let temp = Utils.readBuffer(buffer, length);
-        let app_name = temp.toString();
+        const app_name = temp.toString();
 
         length = VarInt.toNumber(buffer);
         temp = Utils.readBuffer(buffer, length);
-        let proposal_id = temp.toString();
+        const proposal_id = temp.toString();
         return new ProposalFeeData(app_name, proposal_id);
     }
 
@@ -92,7 +92,7 @@ export class ProposalFeeData {
      * @param amount Proposal fee
      */
     public getLinkData(proposer_address: PublicKey, destination: PublicKey, amount: JSBI): LinkDataWithProposalFee {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         this.serialize(buffer);
         return {
             proposer_address: proposer_address.toString(),

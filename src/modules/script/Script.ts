@@ -11,7 +11,7 @@
 
 *******************************************************************************/
 
-import { OP, isOpcode } from "./Opcodes";
+import { isOpcode, OP } from "./Opcodes";
 
 import { SmartBuffer } from "smart-buffer";
 
@@ -61,19 +61,19 @@ export class Script {
      * @param raw Array of OP codes and Buffers
      * @returns opcodes and any associated data for each push opcode
      */
-    public static createOpcodes(raw: Array<OP | Buffer>): Buffer {
-        let opcodes = new SmartBuffer();
+    public static createOpcodes(raw: (OP | Buffer)[]): Buffer {
+        const opcodes = new SmartBuffer();
         let last_op: number = 0;
-        for (let idx = 0; idx < raw.length; idx++) {
-            if (typeof raw[idx] === "number") {
-                last_op = raw[idx] as number;
+        for (const elem of raw) {
+            if (typeof elem === "number") {
+                last_op = elem as number;
                 opcodes.writeUInt8(last_op);
-            } else if (raw[idx] instanceof Buffer) {
-                let bytes = raw[idx] as Buffer;
-                if (last_op == OP.PUSH_DATA_2) {
+            } else if (elem instanceof Buffer) {
+                const bytes = elem as Buffer;
+                if (last_op === OP.PUSH_DATA_2) {
                     opcodes.writeUInt16LE(bytes.length);
                     opcodes.writeBuffer(bytes);
-                } else if (last_op == OP.PUSH_DATA_1) {
+                } else if (last_op === OP.PUSH_DATA_1) {
                     opcodes.writeUInt8(bytes.length);
                     opcodes.writeBuffer(bytes);
                 } else if (last_op >= OP.PUSH_BYTES_1 && last_op <= OP.PUSH_BYTES_75) {
@@ -135,25 +135,26 @@ export class Script {
      * otherwise [message, Script.Null], message is the string explaining the reason why they're invalid
      */
     public static validateScript(type: ScriptType, opcodes: Buffer, StackMaxItemSize: number): [string, Script] {
-        if (opcodes.length == 0) return ["", new Script(opcodes)];
+        if (opcodes.length === 0) return ["", new Script(opcodes)];
 
-        let bytes = SmartBuffer.fromBuffer(opcodes);
+        const bytes = SmartBuffer.fromBuffer(opcodes);
 
         while (bytes.remaining() > 0) {
-            let opcode: OP = bytes.readUInt8();
+            const opcode: OP = bytes.readUInt8();
             if (!isOpcode(opcode)) return ["Script contains an unrecognized opcode", Script.Null];
 
             if (opcode === OP.PUSH_DATA_1) {
-                let reason = Script.isInvalidPushReason(opcode, bytes, StackMaxItemSize);
+                const reason = Script.isInvalidPushReason(opcode, bytes, StackMaxItemSize);
                 if (reason !== "") return [reason, Script.Null];
             } else if (opcode === OP.PUSH_DATA_2) {
-                let reason = Script.isInvalidPushReason(opcode, bytes, StackMaxItemSize);
+                const reason = Script.isInvalidPushReason(opcode, bytes, StackMaxItemSize);
                 if (reason !== "") return [reason, Script.Null];
             } else if (opcode >= OP.PUSH_BYTES_1 && opcode <= OP.PUSH_BYTES_75) {
                 const payload_size = opcode; // encoded in the opcode
                 if (bytes.readOffset + payload_size > bytes.length)
                     return ["PUSH_BYTES_* opcode exceeds total script size", Script.Null];
                 bytes.readOffset += payload_size;
+                // tslint:disable-next-line:no-empty
             } else if (opcode >= OP.PUSH_NUM_1 && opcode <= OP.PUSH_NUM_5) {
             }
 
@@ -171,11 +172,11 @@ export class Script {
         if (op !== OP.PUSH_DATA_1 && op !== OP.PUSH_DATA_2)
             return `${OP[op]} This cannot be used in isInvalidPushReason`;
 
-        let size = op === OP.PUSH_DATA_1 ? 1 : 2;
+        const size = op === OP.PUSH_DATA_1 ? 1 : 2;
         if (bytes.remaining() < size) return `${OP[op]} opcode requires ${size} byte(s) for the payload size`;
 
-        let length = op === OP.PUSH_DATA_1 ? bytes.readUInt8() : bytes.readUInt16LE();
-        if (length == 0 || length > StackMaxItemSize)
+        const length = op === OP.PUSH_DATA_1 ? bytes.readUInt8() : bytes.readUInt16LE();
+        if (length === 0 || length > StackMaxItemSize)
             return `${OP[op]} opcode payload size is not within StackMaxItemSize limits`;
 
         if (bytes.readOffset + length > bytes.length) return `${OP[op]} opcode payload size exceeds total script size`;

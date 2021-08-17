@@ -13,11 +13,11 @@
 
 import { Hash, hashFull } from "../common/Hash";
 import { Height } from "../common/Height";
-import { KeyPair, SecretKey, PublicKey } from "../common/KeyPair";
-import { Lock, Unlock } from "../script/Lock";
+import { KeyPair, PublicKey, SecretKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
 import { TxInput } from "../data/TxInput";
-import { TxOutput, OutputType } from "../data/TxOutput";
+import { OutputType, TxOutput } from "../data/TxOutput";
+import { Lock, Unlock } from "../script/Lock";
 
 import JSBI from "jsbi";
 
@@ -28,12 +28,12 @@ export class TxBuilder {
     /**
      * Array of UTXO to be spent
      */
-    private inputs: Array<RawInput>;
+    private inputs: RawInput[];
 
     /**
      * Array of TxOutput
      */
-    private outputs: Array<TxOutput>;
+    private outputs: TxOutput[];
 
     /**
      * The sum of UTXO in `inputs`
@@ -132,21 +132,21 @@ export class TxBuilder {
         unlock_age: number = 0,
         unlocker?: (tx: Transaction, s: RawInput, idx: number) => Unlock
     ): Transaction {
-        if (this.inputs.length == 0) throw new Error("No input for transaction.");
+        if (this.inputs.length === 0) throw new Error("No input for transaction.");
 
         if (type === OutputType.Freeze && this.payload !== undefined && this.payload.length > 0)
             throw new Error("Freeze transaction cannot have data payload.");
 
-        for (let elem of this.outputs) elem.type = type;
+        for (const elem of this.outputs) elem.type = type;
 
-        let total_fee = JSBI.add(tx_fee, payload_fee);
+        const total_fee = JSBI.add(tx_fee, payload_fee);
         if (JSBI.greaterThan(this.amount, total_fee))
             this.addOutput(this.owner_keypair.address, JSBI.subtract(this.amount, total_fee));
         else if (JSBI.lessThan(this.amount, total_fee)) throw new Error("There is not enough fee.");
 
-        if (this.outputs.length == 0) throw new Error("No output for transaction.");
+        if (this.outputs.length === 0) throw new Error("No output for transaction.");
 
-        let tx = new Transaction(
+        const tx = new Transaction(
             this.inputs.map((n) => new TxInput(n.utxo, Unlock.Null, unlock_age)),
             this.outputs,
             this.payload !== undefined ? this.payload : Buffer.alloc(0),
@@ -155,9 +155,9 @@ export class TxBuilder {
 
         tx.sort();
 
-        let _unlocker = unlocker !== undefined ? unlocker : this.keyUnlocker;
+        const _unlocker = unlocker !== undefined ? unlocker : this.keyUnlocker;
         tx.inputs.forEach((value, idx) => {
-            let raw = this.inputs.find((m) => Buffer.compare(m.utxo.data, value.utxo.data) === 0);
+            const raw = this.inputs.find((m) => Buffer.compare(m.utxo.data, value.utxo.data) === 0);
             if (raw !== undefined) value.unlock = _unlocker(tx, raw, idx);
         });
 

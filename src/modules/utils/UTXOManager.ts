@@ -16,11 +16,11 @@
 
 *******************************************************************************/
 
-import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
-import { OutputType } from "../data/TxOutput";
 import { Hash } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
+import { OutputType } from "../data/TxOutput";
 import { BOAClient } from "../net/BOAClient";
+import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
 import { Utils } from "./Utils";
 
 import JSBI from "jsbi";
@@ -33,13 +33,13 @@ export class UTXOManager {
     /**
      * Internal UTXO Array
      */
-    private readonly items: Array<InternalUTXO>;
+    private readonly items: InternalUTXO[];
 
     /**
      * Constructor
      * @param data The array containing UnspentTxOutput objects
      */
-    constructor(data: Array<UnspentTxOutput>) {
+    constructor(data: UnspentTxOutput[]) {
         this.items = [];
         this.add(data);
     }
@@ -54,8 +54,8 @@ export class UTXOManager {
      * It also allows small amounts to be used first.
      * @param data The array of `UnspentTxOutput`
      */
-    public add(data: Array<UnspentTxOutput>) {
-        let old_length = this.items.length;
+    public add(data: UnspentTxOutput[]) {
+        const old_length = this.items.length;
         this.items.push(
             ...data
                 .filter((n) => this.items.find((m) => m.utxo.data.compare(n.utxo.data) === 0) === undefined)
@@ -64,7 +64,7 @@ export class UTXOManager {
 
         if (this.items.length > old_length)
             this.items.sort((a, b) => {
-                let cmp = (a: JSBI, b: JSBI) => (JSBI.greaterThan(a, b) ? 1 : JSBI.lessThan(a, b) ? -1 : 0);
+                const cmp = (x: JSBI, y: JSBI) => (JSBI.greaterThan(x, y) ? 1 : JSBI.lessThan(x, y) ? -1 : 0);
                 if (JSBI.notEqual(a.height, b.height)) return cmp(a.height, b.height);
                 return Utils.compareBuffer(a.utxo.data, b.utxo.data);
             });
@@ -121,7 +121,7 @@ export class UTXOManager {
      * @returns Returns the available array of UTXO. If the available amount
      * is less than the requested amount, the empty array is returned.
      */
-    public getUTXO(amount: JSBI, height: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): Array<UnspentTxOutput> {
+    public getUTXO(amount: JSBI, height: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): UnspentTxOutput[] {
         let target_amount = JSBI.BigInt(amount);
         if (JSBI.lessThanOrEqual(target_amount, JSBI.BigInt(0)))
             throw new Error(`Positive amount expected, not ${target_amount.toString()}`);
@@ -167,7 +167,7 @@ export class UTXOProvider {
     /**
      * Internal UTXO Array
      */
-    private readonly items: Array<InternalUTXO>;
+    private readonly items: InternalUTXO[];
 
     /**
      * UTXO Owner's Public Key
@@ -202,8 +202,8 @@ export class UTXOProvider {
      * It also allows small amounts to be used first.
      * @param data The array of `UnspentTxOutput`
      */
-    public add(data: Array<UnspentTxOutput>) {
-        let old_length = this.items.length;
+    public add(data: UnspentTxOutput[]) {
+        const old_length = this.items.length;
         this.items.push(
             ...data
                 .filter((n) => this.items.find((m) => m.utxo.data.compare(n.utxo.data) === 0) === undefined)
@@ -212,7 +212,7 @@ export class UTXOProvider {
 
         if (this.items.length > old_length)
             this.items.sort((a, b) => {
-                let cmp = (a: JSBI, b: JSBI) => (JSBI.greaterThan(a, b) ? 1 : JSBI.lessThan(a, b) ? -1 : 0);
+                const cmp = (x: JSBI, y: JSBI) => (JSBI.greaterThan(x, y) ? 1 : JSBI.lessThan(x, y) ? -1 : 0);
                 if (JSBI.notEqual(a.height, b.height)) return cmp(a.height, b.height);
                 return Utils.compareBuffer(a.utxo.data, b.utxo.data);
             });
@@ -226,18 +226,18 @@ export class UTXOProvider {
      * @returns Returns the available array of UTXO. If the available amount
      * is less than the requested amount, the empty array is returned.
      */
-    public async getUTXO(amount: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): Promise<Array<UnspentTxOutput>> {
+    public async getUTXO(amount: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): Promise<UnspentTxOutput[]> {
         if (JSBI.lessThanOrEqual(amount, JSBI.BigInt(0)))
             throw new Error(`Positive amount expected, not ${amount.toString()}`);
 
         let target_amount: JSBI;
-        let result: UnspentTxOutput[] = [];
+        const result: UnspentTxOutput[] = [];
 
         target_amount = JSBI.BigInt(amount);
         while (true) {
             target_amount = JSBI.add(target_amount, estimated_input_fee);
             let sum = JSBI.BigInt(0);
-            let utxo = this.items
+            const utxo = this.items
                 .filter((n) => !n.used)
                 .filter((n) => {
                     if (JSBI.greaterThanOrEqual(sum, target_amount)) return false;
@@ -249,14 +249,14 @@ export class UTXOProvider {
                 })
                 .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount, n.height));
             result.push(...utxo);
-            let res_sum = result.reduce<JSBI>((sum, value) => JSBI.add(sum, value.amount), JSBI.BigInt(0));
-            let estimated_amount = JSBI.add(amount, JSBI.multiply(estimated_input_fee, JSBI.BigInt(result.length)));
+            const res_sum = result.reduce<JSBI>((prev, value) => JSBI.add(prev, value.amount), JSBI.BigInt(0));
+            const estimated_amount = JSBI.add(amount, JSBI.multiply(estimated_input_fee, JSBI.BigInt(result.length)));
             if (JSBI.greaterThanOrEqual(res_sum, estimated_amount)) break;
 
             target_amount = JSBI.subtract(estimated_amount, res_sum);
-            let additional = await this.client.getWalletUTXOs(this.address, target_amount, 0, this.getLastUTXO());
+            const additional = await this.client.getWalletUTXOs(this.address, target_amount, 0, this.getLastUTXO());
             // Not Enough Amount
-            if (additional.length == 0) {
+            if (additional.length === 0) {
                 this.items.forEach((m) => {
                     if (result.find((n) => m.utxo.data.compare(n.utxo.data) !== undefined)) {
                         m.used = false;
@@ -282,7 +282,7 @@ class InternalUTXO extends UnspentTxOutput {
     /**
      * Status variable indicating whether it is used or not
      */
-    public used: Boolean;
+    public used: boolean;
 
     /**
      * Constructor

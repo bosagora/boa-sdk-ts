@@ -14,10 +14,10 @@
 import { hashPart } from "../common/Hash";
 import { Height } from "../common/Height";
 import { JSONValidator } from "../utils/JSONValidator";
-import { TxInput } from "./TxInput";
-import { TxOutput, OutputType } from "./TxOutput";
-import { Utils, iota } from "../utils/Utils";
+import { iota, Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
+import { TxInput } from "./TxInput";
+import { OutputType, TxOutput } from "./TxOutput";
 
 import { SmartBuffer } from "smart-buffer";
 
@@ -125,8 +125,8 @@ export class Transaction {
             this.payload.length + //  Transaction.payload
             Utils.SIZE_OF_LONG; //  Transaction.lock_height
 
-        for (let elem of this.inputs) bytes_length += elem.getNumberOfBytes();
-        for (let elem of this.outputs) bytes_length += elem.getNumberOfBytes();
+        for (const elem of this.inputs) bytes_length += elem.getNumberOfBytes();
+        for (const elem of this.outputs) bytes_length += elem.getNumberOfBytes();
 
         return bytes_length;
     }
@@ -184,10 +184,10 @@ export class Transaction {
      */
     public serialize(buffer: SmartBuffer) {
         VarInt.fromNumber(this.inputs.length, buffer);
-        for (let elem of this.inputs) elem.serialize(buffer);
+        for (const elem of this.inputs) elem.serialize(buffer);
 
         VarInt.fromNumber(this.outputs.length, buffer);
-        for (let elem of this.outputs) elem.serialize(buffer);
+        for (const elem of this.outputs) elem.serialize(buffer);
 
         VarInt.fromNumber(this.payload.length, buffer);
         buffer.writeBuffer(this.payload);
@@ -202,15 +202,15 @@ export class Transaction {
      */
     public static deserialize(buffer: SmartBuffer): Transaction {
         let length = VarInt.toNumber(buffer);
-        let inputs = iota(length).map(() => TxInput.deserialize(buffer));
+        const inputs = iota(length).map(() => TxInput.deserialize(buffer));
 
         length = VarInt.toNumber(buffer);
-        let outputs = iota(length).map(() => TxOutput.deserialize(buffer));
+        const outputs = iota(length).map(() => TxOutput.deserialize(buffer));
 
         length = VarInt.toNumber(buffer);
-        let payload = Utils.readBuffer(buffer, length);
+        const payload = Utils.readBuffer(buffer, length);
 
-        let lock_height = Height.deserialize(buffer);
+        const lock_height = Height.deserialize(buffer);
 
         return new Transaction(inputs, outputs, payload, lock_height);
     }

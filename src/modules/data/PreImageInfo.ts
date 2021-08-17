@@ -11,9 +11,9 @@
 
 *******************************************************************************/
 
-import { JSONValidator } from "../utils/JSONValidator";
 import { Hash } from "../common/Hash";
 import { Height } from "../common/Height";
+import { JSONValidator } from "../utils/JSONValidator";
 
 /**
  * The class that defines the preImageInfo.

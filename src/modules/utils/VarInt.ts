@@ -17,7 +17,7 @@ import { Utils } from "./Utils";
 import JSBI from "jsbi";
 import { SmartBuffer } from "smart-buffer";
 
-const number_type: Array<number> = [0xfc, 0xfd, 0xfe, 0xff];
+const number_type: number[] = [0xfc, 0xfd, 0xfe, 0xff];
 
 /**
  * A class that defines the ability to read and write a number
@@ -57,7 +57,7 @@ export class VarInt {
             buffer.writeUInt32LE(JSBI.toNumber(value));
         } else {
             buffer.writeUInt8(number_type[3]);
-            let buf = Buffer.allocUnsafe(8);
+            const buf = Buffer.allocUnsafe(8);
             Utils.writeJSBigIntLE(buf, value);
             buffer.writeBuffer(buf);
         }
@@ -72,16 +72,16 @@ export class VarInt {
         let remaining = buffer.remaining();
         if (remaining < 1) throw new Error(`Requested 1 bytes but only ${remaining} bytes available`);
 
-        let value = buffer.readUInt8();
+        const value = buffer.readUInt8();
 
         if (value <= number_type[0]) {
             return value;
-        } else if (value == number_type[1]) {
+        } else if (value === number_type[1]) {
             remaining = buffer.remaining();
             if (remaining < 2) throw new Error(`Requested 2 bytes but only ${remaining} bytes available`);
 
             return buffer.readUInt16LE();
-        } else if (value == number_type[2]) {
+        } else if (value === number_type[2]) {
             remaining = buffer.remaining();
             if (remaining < 4) throw new Error(`Requested 4 bytes but only ${remaining} bytes available`);
 
@@ -98,16 +98,16 @@ export class VarInt {
         let remaining = buffer.remaining();
         if (remaining < 1) throw new Error(`Requested 1 bytes but only ${remaining} bytes available`);
 
-        let value = buffer.readUInt8();
+        const value = buffer.readUInt8();
 
         if (value <= number_type[0]) {
             return JSBI.BigInt(value);
-        } else if (value == number_type[1]) {
+        } else if (value === number_type[1]) {
             remaining = buffer.remaining();
             if (remaining < 2) throw new Error(`Requested 2 bytes but only ${remaining} bytes available`);
 
             return JSBI.BigInt(buffer.readUInt16LE());
-        } else if (value == number_type[2]) {
+        } else if (value === number_type[2]) {
             remaining = buffer.remaining();
             if (remaining < 4) throw new Error(`Requested 4 bytes but only ${remaining} bytes available`);
 

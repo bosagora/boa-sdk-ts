@@ -11,14 +11,14 @@
 
 *******************************************************************************/
 
-import { BitMask } from "./BitMask";
-import { Enrollment } from "./Enrollment";
-import { JSONValidator } from "../utils/JSONValidator";
 import { Hash, hashPart } from "../common/Hash";
 import { Height } from "../common/Height";
 import { Signature } from "../common/Signature";
-import { Utils, iota } from "../utils/Utils";
+import { JSONValidator } from "../utils/JSONValidator";
+import { iota } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
+import { BitMask } from "./BitMask";
+import { Enrollment } from "./Enrollment";
 
 import JSBI from "jsbi";
 import { SmartBuffer } from "smart-buffer";
@@ -67,7 +67,7 @@ export class BlockHeader {
     /**
      * List of indices to the validator UTXO set which have not revealed the preimage
      */
-    public missing_validators: Array<number>;
+    public missing_validators: number[];
 
     /**
      * Block seconds offset from Genesis Timestamp in `ConsensusParams`
@@ -94,7 +94,7 @@ export class BlockHeader {
         signature: Signature,
         enrollments: Enrollment[],
         random_seed: Hash,
-        missing_validators: Array<number>,
+        missing_validators: number[],
         time_offset: number
     ) {
         this.prev_block = prev_block;
@@ -144,9 +144,9 @@ export class BlockHeader {
         this.prev_block.computeHash(buffer);
         this.height.computeHash(buffer);
         this.merkle_root.computeHash(buffer);
-        for (let elem of this.enrollments) elem.computeHash(buffer);
+        for (const elem of this.enrollments) elem.computeHash(buffer);
         this.random_seed.computeHash(buffer);
-        for (let elem of this.missing_validators) buffer.writeUInt32LE(elem);
+        for (const elem of this.missing_validators) buffer.writeUInt32LE(elem);
         hashPart(JSBI.BigInt(this.time_offset), buffer);
     }
 
@@ -163,10 +163,10 @@ export class BlockHeader {
         this.height.serialize(buffer);
 
         VarInt.fromNumber(this.enrollments.length, buffer);
-        for (let elem of this.enrollments) elem.serialize(buffer);
+        for (const elem of this.enrollments) elem.serialize(buffer);
 
         VarInt.fromNumber(this.missing_validators.length, buffer);
-        for (let elem of this.missing_validators) VarInt.fromNumber(elem, buffer);
+        for (const elem of this.missing_validators) VarInt.fromNumber(elem, buffer);
 
         VarInt.fromNumber(this.time_offset, buffer);
     }
@@ -176,20 +176,20 @@ export class BlockHeader {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): BlockHeader {
-        let prev_block = Hash.deserialize(buffer);
-        let merkle_root = Hash.deserialize(buffer);
-        let random_seed = Hash.deserialize(buffer);
-        let signature = Signature.deserialize(buffer);
-        let validators = BitMask.deserialize(buffer);
-        let height = Height.deserialize(buffer);
+        const prev_block = Hash.deserialize(buffer);
+        const merkle_root = Hash.deserialize(buffer);
+        const random_seed = Hash.deserialize(buffer);
+        const signature = Signature.deserialize(buffer);
+        const validators = BitMask.deserialize(buffer);
+        const height = Height.deserialize(buffer);
 
         let length = VarInt.toNumber(buffer);
-        let enrollments = iota(length).map(() => Enrollment.deserialize(buffer));
+        const enrollments = iota(length).map(() => Enrollment.deserialize(buffer));
 
         length = VarInt.toNumber(buffer);
-        let missing_validators = iota(length).map(() => VarInt.toNumber(buffer));
+        const missing_validators = iota(length).map(() => VarInt.toNumber(buffer));
 
-        let time_offset = VarInt.toNumber(buffer);
+        const time_offset = VarInt.toNumber(buffer);
 
         return new BlockHeader(
             prev_block,

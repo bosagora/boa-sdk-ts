@@ -11,12 +11,12 @@
 
 *******************************************************************************/
 
-import { BlockHeader } from "./BlockHeader";
-import { JSONValidator } from "../utils/JSONValidator";
 import { Hash } from "../common/Hash";
-import { Transaction } from "./Transaction";
-import { VarInt } from "../utils/VarInt";
+import { JSONValidator } from "../utils/JSONValidator";
 import { iota } from "../utils/Utils";
+import { VarInt } from "../utils/VarInt";
+import { BlockHeader } from "./BlockHeader";
+import { Transaction } from "./Transaction";
 
 import { SmartBuffer } from "smart-buffer";
 
@@ -68,11 +68,11 @@ export class Block {
 
         JSONValidator.isValidOtherwiseThrow("Block", value);
 
-        let transactions: Transaction[] = [];
-        for (let elem of value.txs) transactions.push(Transaction.reviver("", elem));
+        const transactions: Transaction[] = [];
+        for (const elem of value.txs) transactions.push(Transaction.reviver("", elem));
 
-        let merkle_tree: Hash[] = [];
-        for (let elem of value.merkle_tree) merkle_tree.push(new Hash(elem));
+        const merkle_tree: Hash[] = [];
+        for (const elem of value.merkle_tree) merkle_tree.push(new Hash(elem));
 
         return new Block(BlockHeader.reviver("", value.header), transactions, merkle_tree);
     }
@@ -85,10 +85,10 @@ export class Block {
         this.header.serialize(buffer);
 
         VarInt.fromNumber(this.txs.length, buffer);
-        for (let tx of this.txs) tx.serialize(buffer);
+        for (const tx of this.txs) tx.serialize(buffer);
 
         VarInt.fromNumber(this.merkle_tree.length, buffer);
-        for (let h of this.merkle_tree) h.serialize(buffer);
+        for (const h of this.merkle_tree) h.serialize(buffer);
     }
 
     /**
@@ -96,13 +96,13 @@ export class Block {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): Block {
-        let header = BlockHeader.deserialize(buffer);
+        const header = BlockHeader.deserialize(buffer);
 
         let length = VarInt.toNumber(buffer);
-        let txs = iota(length).map(() => Transaction.deserialize(buffer));
+        const txs = iota(length).map(() => Transaction.deserialize(buffer));
 
         length = VarInt.toNumber(buffer);
-        let merkle_tree = iota(length).map(() => Hash.deserialize(buffer));
+        const merkle_tree = iota(length).map(() => Hash.deserialize(buffer));
 
         return new Block(header, txs, merkle_tree);
     }

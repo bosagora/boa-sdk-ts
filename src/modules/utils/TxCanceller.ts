@@ -15,10 +15,10 @@ import { Hash } from "../common/Hash";
 import { KeyPair, PublicKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
 import { OutputType } from "../data/TxOutput";
-import { LockType } from "../script/Lock";
 import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
-import { TxPayloadFee } from "./TxPayloadFee";
+import { LockType } from "../script/Lock";
 import { TxBuilder } from "./TxBuilder";
+import { TxPayloadFee } from "./TxPayloadFee";
 
 import JSBI from "jsbi";
 
@@ -36,12 +36,12 @@ export class TxCanceller {
     /**
      * The array of KeyPairs to be used for signing
      */
-    private key_pairs: Array<KeyPair>;
+    private key_pairs: KeyPair[];
 
     /**
      * The array of UTXO information used in tx's inputs
      */
-    private utxos: Array<UnspentTxOutput>;
+    private utxos: UnspentTxOutput[];
 
     /**
      * Constructor
@@ -49,7 +49,7 @@ export class TxCanceller {
      * @param key_pairs    The array of KeyPairs to be used for signing
      * @param utxos        The array of UTXO information used in tx's inputs
      */
-    constructor(tx: Transaction, utxos: Array<UnspentTxOutput>, key_pairs: Array<KeyPair>) {
+    constructor(tx: Transaction, utxos: UnspentTxOutput[], key_pairs: KeyPair[]) {
         this.tx = tx;
         this.utxos = utxos;
         this.key_pairs = key_pairs;
@@ -79,28 +79,28 @@ export class TxCanceller {
 
         if (this.key_pairs.length === 0) return TxCancelResultCode.NotFoundKey;
 
-        for (let input of this.tx.inputs) {
-            let u = this.findUTXO(input.utxo);
+        for (const input of this.tx.inputs) {
+            const u = this.findUTXO(input.utxo);
             if (u === undefined) return TxCancelResultCode.NotFoundUTXO;
 
             if (u.lock_type !== LockType.Key) return TxCancelResultCode.UnsupportedLockType;
 
-            let pk = new PublicKey(Buffer.from(u.lock_bytes, "base64"));
-            let found = this.findKey(pk);
+            const pk = new PublicKey(Buffer.from(u.lock_bytes, "base64"));
+            const found = this.findKey(pk);
             if (found === undefined) return TxCancelResultCode.NotFoundKey;
 
             // Unfreezing transactions cannot be canceled.
             if (u.type === OutputType.Freeze) return TxCancelResultCode.UnsupportedUnfreezing;
         }
 
-        let amount_info = this.calculateAmount();
-        let new_adjusted_fee = this.getNewAdjustedFee(amount_info);
-        let tx_size = Transaction.getEstimatedNumberOfBytes(
+        const amount_info = this.calculateAmount();
+        const new_adjusted_fee = this.getNewAdjustedFee(amount_info);
+        const tx_size = Transaction.getEstimatedNumberOfBytes(
             this.tx.inputs.length,
             this.tx.inputs.length,
             this.tx.payload.length
         );
-        let total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
+        const total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
 
         // Fees for cancellation transactions can be set larger than existing fees.
         // Make sure it's big enough to work it out.
@@ -117,25 +117,25 @@ export class TxCanceller {
         let sum_in: JSBI = JSBI.BigInt(0);
         let sum_out: JSBI = JSBI.BigInt(0);
 
-        for (let input of this.tx.inputs) {
-            let u = this.findUTXO(input.utxo);
+        for (const input of this.tx.inputs) {
+            const u = this.findUTXO(input.utxo);
             if (u !== undefined) sum_in = JSBI.add(sum_in, u.amount);
         }
 
-        for (let output of this.tx.outputs) sum_out = JSBI.add(sum_out, output.value);
+        for (const output of this.tx.outputs) sum_out = JSBI.add(sum_out, output.value);
 
-        let total_fee = JSBI.subtract(sum_in, sum_out);
-        let payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
-        let tx_fee = JSBI.subtract(total_fee, payload_fee);
-        let tx_size = this.tx.getNumberOfBytes();
+        const total_fee = JSBI.subtract(sum_in, sum_out);
+        const payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
+        const tx_fee = JSBI.subtract(total_fee, payload_fee);
+        const tx_size = this.tx.getNumberOfBytes();
 
         return {
             sum_input: sum_in,
             sum_output: sum_out,
-            total_fee: total_fee,
-            payload_fee: payload_fee,
-            tx_fee: tx_fee,
-            tx_size: tx_size,
+            total_fee,
+            payload_fee,
+            tx_fee,
+            tx_size,
             adjusted_fee: JSBI.divide(total_fee, JSBI.BigInt(tx_size)),
         };
     }
@@ -159,30 +159,30 @@ export class TxCanceller {
      * Otherwise, they have values based on the cause of the error.
      */
     public build(): ITxCancelResult {
-        let result_code = this.validate();
+        const result_code = this.validate();
         if (result_code !== TxCancelResultCode.Success) return { code: result_code };
 
-        let amount_info = this.calculateAmount();
-        let new_adjusted_fee = this.getNewAdjustedFee(amount_info);
+        const amount_info = this.calculateAmount();
+        const new_adjusted_fee = this.getNewAdjustedFee(amount_info);
 
-        let in_length = this.tx.inputs.length;
-        let tx_size = Transaction.getEstimatedNumberOfBytes(in_length, in_length, this.tx.payload.length);
-        let total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
-        let payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
-        let tx_fee = JSBI.subtract(total_fee, payload_fee);
+        const in_length = this.tx.inputs.length;
+        const tx_size = Transaction.getEstimatedNumberOfBytes(in_length, in_length, this.tx.payload.length);
+        const total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
+        const payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
+        const tx_fee = JSBI.subtract(total_fee, payload_fee);
 
-        let divided_fee = JSBI.divide(total_fee, JSBI.BigInt(in_length));
-        let remain_fee = JSBI.subtract(total_fee, JSBI.multiply(divided_fee, JSBI.BigInt(in_length)));
+        const divided_fee = JSBI.divide(total_fee, JSBI.BigInt(in_length));
+        const remain_fee = JSBI.subtract(total_fee, JSBI.multiply(divided_fee, JSBI.BigInt(in_length)));
 
-        let builder = new TxBuilder(this.key_pairs[0]);
+        const builder = new TxBuilder(this.key_pairs[0]);
 
         this.tx.inputs.forEach((input, idx) => {
-            let u = this.findUTXO(input.utxo);
+            const u = this.findUTXO(input.utxo);
             if (u !== undefined) {
-                let k = this.findKey(new PublicKey(Buffer.from(u.lock_bytes, "base64")));
+                const k = this.findKey(new PublicKey(Buffer.from(u.lock_bytes, "base64")));
                 if (k !== undefined) {
                     let amount = JSBI.subtract(u.amount, divided_fee);
-                    if (idx == in_length - 1) amount = JSBI.subtract(amount, remain_fee);
+                    if (idx === in_length - 1) amount = JSBI.subtract(amount, remain_fee);
 
                     builder.addInput(u.utxo, u.amount, k.secret);
                     builder.addOutput(k.address, amount);
@@ -206,8 +206,8 @@ export class TxCanceller {
      * PublicKey extract stored on the map of UTXO
      * @param utxo_map the map of UTXO
      */
-    public static addresses(utxo_map: Map<string, UnspentTxOutput>): Array<PublicKey> {
-        let res = new Array<PublicKey>();
+    public static addresses(utxo_map: Map<string, UnspentTxOutput>): PublicKey[] {
+        const res = new Array<PublicKey>();
         utxo_map.forEach((value) => {
             if (value.lock_type === LockType.Key) {
                 res.push(new PublicKey(Buffer.from(value.lock_bytes, "base64")));

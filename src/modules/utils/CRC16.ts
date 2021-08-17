@@ -33,9 +33,9 @@ import crc from "crc";
  * See_Also: https://github.com/bosagora/agora/blob/93c31daa616e76011deee68a8645e1b86624ce3d/source/agora/common/crypto/Crc16.d#L90-L100
  */
 export function checksum(data: Buffer): Buffer {
-    const checksum = Buffer.alloc(2);
-    checksum.writeUInt16LE(crc.crc16xmodem(data), 0);
-    return checksum;
+    const check_sum = Buffer.alloc(2);
+    check_sum.writeUInt16LE(crc.crc16xmodem(data), 0);
+    return check_sum;
 }
 
 /**

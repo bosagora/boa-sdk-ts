@@ -11,8 +11,8 @@
 
 *******************************************************************************/
 
-import { Utils, Endian } from "../utils/Utils";
 import { SodiumHelper } from "../utils/SodiumHelper";
+import { Endian, Utils } from "../utils/Utils";
 
 import JSBI from "jsbi";
 import { SmartBuffer } from "smart-buffer";
@@ -139,7 +139,7 @@ export function hash(source: Buffer): Hash {
  * See_Also https://github.com/bosagora/agora/blob/93c31daa616e76011deee68a8645e1b86624ce3d/source/agora/common/Hash.d#L239-L255
  */
 export function hashMulti(...args: Buffer[]): Hash {
-    let buffer = args.reduce<Buffer>((sum, elem) => Buffer.concat([sum, elem]), Buffer.alloc(0));
+    const buffer = args.reduce<Buffer>((sum, elem) => Buffer.concat([sum, elem]), Buffer.alloc(0));
     return new Hash(Buffer.from(SodiumHelper.sodium.crypto_generichash(Hash.Width, buffer)));
 }
 
@@ -166,7 +166,7 @@ export function makeUTXOKey(h: Hash, index: JSBI): Hash {
 export function hashFull(record: any): Hash {
     if (record === null || record === undefined) return new Hash(Buffer.alloc(Hash.Width));
 
-    let buffer = new SmartBuffer();
+    const buffer = new SmartBuffer();
     hashPart(record, buffer);
     return hash(buffer.readBuffer());
 }
@@ -180,13 +180,13 @@ export function hashPart(record: any, buffer: SmartBuffer) {
     if (record === null || record === undefined) return;
 
     // If the record has a method called `computeHash`,
-    if (typeof record["computeHash"] == "function") {
+    if (typeof record.computeHash === "function") {
         record.computeHash(buffer);
         return;
     }
 
     if (typeof record === "string") {
-        let buf = Buffer.from(record);
+        const buf = Buffer.from(record);
         hashVarInt(JSBI.BigInt(buf.length), buffer);
         buffer.writeBuffer(buf);
         return;
@@ -212,11 +212,11 @@ export function hashPart(record: any, buffer: SmartBuffer) {
 
     if (Array.isArray(record)) {
         hashVarInt(JSBI.BigInt(record.length), buffer);
-        for (let elem of record) {
+        for (const elem of record) {
             hashPart(elem, buffer);
         }
     } else {
-        for (let key in record) {
+        for (const key in record) {
             if (record.hasOwnProperty(key)) {
                 hashPart(record[key], buffer);
             }
@@ -240,7 +240,7 @@ export function hashVarInt(value: JSBI, buffer: SmartBuffer) {
         buffer.writeUInt32LE(JSBI.toNumber(value));
     } else {
         buffer.writeUInt8(0xff);
-        let buf = Buffer.allocUnsafe(8);
+        const buf = Buffer.allocUnsafe(8);
         Utils.writeJSBigIntLE(buf, value);
         buffer.writeBuffer(buf);
     }

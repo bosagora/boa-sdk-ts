@@ -9,7 +9,7 @@
     License:
         MIT License. See LICENSE for details.
 
- *******************************************************************************/
+*******************************************************************************/
 
 /**
  * The interface of the transactions history element
@@ -113,12 +113,12 @@ export interface ITxOverview {
     /**
      * The address and amount of the output associated with the transaction input
      */
-    senders: Array<ITxOverviewElement>;
+    senders: ITxOverviewElement[];
 
     /**
      * The address and amount of transaction output
      */
-    receivers: Array<ITxOverviewElement>;
+    receivers: ITxOverviewElement[];
 
     /**
      * Transaction fee

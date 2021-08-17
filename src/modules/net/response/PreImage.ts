@@ -34,10 +34,10 @@ export class PreImage {
      * @param d The Height of the block that this pre-image is for
      */
     constructor(h?: Hash, d?: string) {
-        if (h != undefined) this.hash = new Hash(h.data);
+        if (h !== undefined) this.hash = new Hash(h.data);
         else this.hash = new Hash(Buffer.alloc(Hash.Width));
 
-        if (d != undefined) this.height = d;
+        if (d !== undefined) this.height = d;
         else this.height = "0";
     }
 

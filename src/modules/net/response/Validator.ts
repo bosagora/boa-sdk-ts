@@ -12,8 +12,8 @@
 *******************************************************************************/
 
 import { Hash } from "../../common/Hash";
-import { PreImage, JSONPreImage } from "./PreImage";
 import { Utils } from "../../utils/Utils";
+import { JSONPreImage, PreImage } from "./PreImage";
 
 /**
  * Define the validator
@@ -47,16 +47,16 @@ export class Validator {
      * @param image   The pre-image
      */
     constructor(address?: string, height?: number, stake?: Hash, image?: PreImage) {
-        if (address != undefined) this.address = address;
+        if (address !== undefined) this.address = address;
         else this.address = "";
 
-        if (height != undefined) this.enrolled_at = height;
+        if (height !== undefined) this.enrolled_at = height;
         else this.enrolled_at = 0;
 
-        if (stake != undefined) this.stake = stake;
+        if (stake !== undefined) this.stake = stake;
         else this.stake = new Hash(Buffer.alloc(Hash.Width));
 
-        if (image != undefined) this.preimage = image;
+        if (image !== undefined) this.preimage = image;
         else this.preimage = new PreImage();
     }
 

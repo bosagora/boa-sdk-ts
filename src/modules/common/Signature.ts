@@ -11,8 +11,8 @@
 
 *******************************************************************************/
 
-import { Utils, Endian } from "../utils/Utils";
 import { SmartBuffer } from "smart-buffer";
+import { Endian, Utils } from "../utils/Utils";
 
 /**
  * Define the signature

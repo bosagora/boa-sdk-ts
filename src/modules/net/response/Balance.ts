@@ -11,8 +11,8 @@
 
 *******************************************************************************/
 
-import { JSONValidator } from "../../utils/JSONValidator";
 import JSBI from "jsbi";
+import { JSONValidator } from "../../utils/JSONValidator";
 
 /**
  * Class that defines the balance for one address

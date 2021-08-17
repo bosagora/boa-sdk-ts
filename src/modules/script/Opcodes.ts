@@ -173,7 +173,7 @@ export enum OP {
  * @returns true if the opcode is normal
  */
 export function isOpcode(value: number): boolean {
-    for (let member in OP) if (OP.hasOwnProperty(member)) if (Number(member) === value) return true;
+    for (const member in OP) if (OP.hasOwnProperty(member)) if (Number(member) === value) return true;
 
     return value >= 1 && value <= 75;
 }

@@ -78,11 +78,11 @@ export class Utils {
      * @returns The output buffer
      */
     public static readFromString(hex: string, target?: Buffer, endian: Endian = Endian.Little): Buffer {
-        let start = hex.substr(0, 2) == "0x" ? 2 : 0;
-        let length = (hex.length - start) >> 1;
+        const start = hex.substr(0, 2) === "0x" ? 2 : 0;
+        const length = (hex.length - start) >> 1;
         if (target === undefined) target = Buffer.alloc(length);
 
-        if (endian == Endian.Little) {
+        if (endian === Endian.Little) {
             for (let pos = 0, idx = start; idx < length * 2 + start; idx += 2, pos++)
                 target[length - pos - 1] = parseInt(hex.substr(idx, 2), 16);
         } else {
@@ -99,10 +99,10 @@ export class Utils {
      * @returns The hex string
      */
     public static writeToString(source: Buffer, endian: Endian = Endian.Little): string {
-        if (source.length == 0) return "";
+        if (source.length === 0) return "";
 
-        if (endian == Endian.Little) {
-            let hex: Array<string> = [];
+        if (endian === Endian.Little) {
+            const hex: string[] = [];
             for (let idx = source.length - 1; idx >= 0; idx--) {
                 hex.push((source[idx] >>> 4).toString(16));
                 hex.push((source[idx] & 0xf).toString(16));
@@ -165,7 +165,7 @@ export class Utils {
      * @param length The requested bytes
      */
     public static readBuffer(source: SmartBuffer, length: number): Buffer {
-        let remaining = source.remaining();
+        const remaining = source.remaining();
         if (remaining < length) throw new Error(`Requested ${length} bytes but only ${remaining} bytes available`);
 
         return source.readBuffer(length);
@@ -176,7 +176,7 @@ export class Utils {
      * @param obj  The instance of a class
      * @param json The object of the JSON
      */
-    public static validateJSON(obj: Object, json: any) {
+    public static validateJSON(obj: object, json: any) {
         Object.getOwnPropertyNames(obj).forEach((property) => {
             if (!json.hasOwnProperty(property)) {
                 throw new Error("Parse error: " + obj.constructor.name + "." + property);
@@ -191,10 +191,10 @@ export class Utils {
      * and if a and b are equal, it returns zero.
      */
     public static compareBuffer(a: Buffer, b: Buffer): number {
-        let min_length = Math.min(a.length, b.length);
+        const min_length = Math.min(a.length, b.length);
         for (let idx = 0; idx < min_length; idx++) {
-            let a_value = a[a.length - 1 - idx];
-            let b_value = b[b.length - 1 - idx];
+            const a_value = a[a.length - 1 - idx];
+            const b_value = b[b.length - 1 - idx];
             if (a_value !== b_value) return a_value - b_value;
         }
 
@@ -211,8 +211,8 @@ export class Utils {
      * @returns true if the conversion succeeds
      */
     public static convertBits(
-        out_values: Array<number>,
-        in_values: Array<number>,
+        out_values: number[],
+        in_values: number[],
         from: number,
         to: number,
         pad: boolean
@@ -222,8 +222,7 @@ export class Utils {
         const max_v: number = (1 << to) - 1;
         const max_acc: number = (1 << (from + to - 1)) - 1;
 
-        for (let i = 0; i < in_values.length; ++i) {
-            let value = in_values[i];
+        for (const value of in_values) {
             acc = ((acc << from) | value) & max_acc;
             bits += from;
             while (bits >= to) {
@@ -284,7 +283,7 @@ export class ArrayRange {
             step = q;
         }
 
-        if (begin === end || step == 0) {
+        if (begin === end || step === 0) {
             this.first = begin;
             this.last = begin;
             this.step = 0;
@@ -314,7 +313,7 @@ export class ArrayRange {
      * forEach calls the callback function one time for each element in the array.
      */
     public forEach(callback: (value: number, index: number) => void) {
-        let length = this.length;
+        const length = this.length;
         for (let idx = 0, value = this.first; idx < length; idx++, value += this.step) callback(value, idx);
     }
 
@@ -325,8 +324,8 @@ export class ArrayRange {
      * The map method calls the callback function one time for each element in the array.
      */
     public map<U>(callback: (value: number, index: number) => U): U[] {
-        let array: U[] = [];
-        let length = this.length;
+        const array: U[] = [];
+        const length = this.length;
         for (let idx = 0, value = this.first; idx < length; idx++, value += this.step) array.push(callback(value, idx));
         return array;
     }
@@ -337,8 +336,8 @@ export class ArrayRange {
      * The filter method calls the callback function one time for each element in the array.
      */
     public filter(callback: (value: number, index: number) => unknown): number[] {
-        let array = [];
-        let length = this.length;
+        const array: number[] = [];
+        const length = this.length;
         for (let idx = 0, value = this.first; idx < length; idx++, value += this.step)
             if (callback(value, idx)) array.push(value);
         return array;
@@ -360,7 +359,7 @@ export class ArrayRange {
         initialValue: T
     ): T {
         let accumulator = initialValue;
-        let length = this.length;
+        const length = this.length;
         for (let idx = 0, value = this.first; idx < length; idx++, value += this.step)
             accumulator = callback(accumulator, value, idx);
         return accumulator;

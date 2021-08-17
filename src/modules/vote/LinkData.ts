@@ -9,7 +9,7 @@
     License:
         MIT License. See LICENSE for details.
 
- *******************************************************************************/
+*******************************************************************************/
 
 /**
  * Data structure transferred from Votera app to BOA Wallet app
@@ -50,7 +50,7 @@ export interface LinkDataWithProposalData {
     /**
      * Array of all validators - used as the output of transactions in wallet
      */
-    validators: Array<string>;
+    validators: string[];
 
     /**
      * Voting fee per validator - used as the amount of the output of transactions in the wallet

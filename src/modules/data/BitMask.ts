@@ -12,8 +12,8 @@
 *******************************************************************************/
 
 import { SmartBuffer } from "smart-buffer";
-import { VarInt } from "../utils/VarInt";
 import { iota, Utils } from "../utils/Utils";
+import { VarInt } from "../utils/VarInt";
 
 /**
  * The class that defines the BitMask
@@ -36,7 +36,7 @@ export class BitMask {
      */
     constructor(length: number, bytes?: Buffer) {
         this._length = length;
-        let size = 1 + Math.floor((length - 1) / 8);
+        const size = 1 + Math.floor((length - 1) / 8);
         if (bytes === undefined) {
             this._bytes = Buffer.alloc(size);
             return;
@@ -121,7 +121,7 @@ export class BitMask {
      * @returns The instance of BitMask
      */
     public static fromString(value: string): BitMask {
-        let bitmask = new BitMask(value.length);
+        const bitmask = new BitMask(value.length);
         iota(value.length).forEach((idx) => {
             bitmask.set(idx, value[idx] === "1");
         });

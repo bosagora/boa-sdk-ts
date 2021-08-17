@@ -11,11 +11,11 @@
 
 *******************************************************************************/
 
+import { hashPart } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
 import { Signature } from "../common/Signature";
-import { VarInt } from "../utils/VarInt";
 import { Utils } from "../utils/Utils";
-import { hashPart } from "../common/Hash";
+import { VarInt } from "../utils/VarInt";
 import { LinkDataWithVoteData } from "./LinkData";
 
 import { SmartBuffer } from "smart-buffer";
@@ -86,7 +86,7 @@ export class VoterCard {
     public serialize(buffer: SmartBuffer) {
         buffer.writeBuffer(this.validator_address.data);
         buffer.writeBuffer(this.address.data);
-        let temp = Buffer.from(this.expires);
+        const temp = Buffer.from(this.expires);
         VarInt.fromNumber(temp.length, buffer);
         buffer.writeBuffer(temp);
         buffer.writeBuffer(this.signature.data);
@@ -98,12 +98,12 @@ export class VoterCard {
      * @param buffer The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): VoterCard {
-        let validator_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
-        let address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
-        let length = VarInt.toNumber(buffer);
-        let temp = Utils.readBuffer(buffer, length);
-        let expires = temp.toString();
-        let signature = new Signature(Utils.readBuffer(buffer, Signature.Width));
+        const validator_address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
+        const address = new PublicKey(Utils.readBuffer(buffer, Utils.SIZE_OF_PUBLIC_KEY));
+        const length = VarInt.toNumber(buffer);
+        const temp = Utils.readBuffer(buffer, length);
+        const expires = temp.toString();
+        const signature = new Signature(Utils.readBuffer(buffer, Signature.Width));
 
         return new VoterCard(validator_address, address, expires, signature);
     }
@@ -227,22 +227,22 @@ export class BallotData {
      */
     public static deserialize(buffer: SmartBuffer): BallotData {
         let length = VarInt.toNumber(buffer);
-        let header = Utils.readBuffer(buffer, length);
+        const header = Utils.readBuffer(buffer, length);
         if (header.toString() !== BallotData.HEADER) throw new Error("This is not the expected data type.");
 
         length = VarInt.toNumber(buffer);
         let temp = Utils.readBuffer(buffer, length);
-        let app_name = temp.toString();
+        const app_name = temp.toString();
 
         length = VarInt.toNumber(buffer);
         temp = Utils.readBuffer(buffer, length);
-        let proposal_id = temp.toString();
+        const proposal_id = temp.toString();
 
         length = VarInt.toNumber(buffer);
-        let ballot = Utils.readBuffer(buffer, length);
-        let card = VoterCard.deserialize(buffer);
-        let sequence = VarInt.toNumber(buffer);
-        let signature = new Signature(Utils.readBuffer(buffer, Signature.Width));
+        const ballot = Utils.readBuffer(buffer, length);
+        const card = VoterCard.deserialize(buffer);
+        const sequence = VarInt.toNumber(buffer);
+        const signature = new Signature(Utils.readBuffer(buffer, Signature.Width));
         return new BallotData(app_name, proposal_id, ballot, card, sequence, signature);
     }
 
@@ -250,7 +250,7 @@ export class BallotData {
      * Returns the data to be linked to the BOA wallet.
      */
     public getLinkData(): LinkDataWithVoteData {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         this.serialize(buffer);
         return {
             payload: buffer.toBuffer().toString("base64"),

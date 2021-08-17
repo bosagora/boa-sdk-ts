@@ -14,20 +14,20 @@
 
 *******************************************************************************/
 
-import { Hash, hash } from "../common/Hash";
-import { PublicKey } from "../common/KeyPair";
-import { Request } from "./Request";
-import { UnspentTxOutput } from "./response/UnspentTxOutput";
-import { Validator } from "./response/Validator";
-import { TransactionFee } from "./response/TrasactionFee";
-import { Balance } from "./response/Balance";
-import { ITxHistoryElement, ITxOverview, IPendingTxs, ISPVStatus } from "./response/Types";
-import { Transaction } from "../data/Transaction";
-import { handleNetworkError } from "./error/ErrorTypes";
-import { TxPayloadFee } from "../utils/TxPayloadFee";
-import { Utils } from "../utils/Utils";
 import { AxiosResponse } from "axios";
 import uri from "urijs";
+import { Hash, hash } from "../common/Hash";
+import { PublicKey } from "../common/KeyPair";
+import { Transaction } from "../data/Transaction";
+import { TxPayloadFee } from "../utils/TxPayloadFee";
+import { Utils } from "../utils/Utils";
+import { handleNetworkError } from "./error/ErrorTypes";
+import { Request } from "./Request";
+import { Balance } from "./response/Balance";
+import { TransactionFee } from "./response/TrasactionFee";
+import { IPendingTxs, ISPVStatus, ITxHistoryElement, ITxOverview } from "./response/Types";
+import { UnspentTxOutput } from "./response/UnspentTxOutput";
+import { Validator } from "./response/Validator";
 
 import JSBI from "jsbi";
 
@@ -65,27 +65,27 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getAllValidators(height?: number): Promise<Array<Validator>> {
-        return new Promise<Array<Validator>>((resolve, reject) => {
-            let url = uri(this.server_url).directory("validators");
+    public getAllValidators(height?: number): Promise<Validator[]> {
+        return new Promise<Validator[]>((resolve, reject) => {
+            const url = uri(this.server_url).directory("validators");
 
-            if (height != undefined) url.addSearch("height", height);
+            if (height !== undefined) url.addSearch("height", height);
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    let validators: Array<Validator> = new Array<Validator>();
-                    if (response.status == 200) {
+                    const validators: Validator[] = new Array<Validator>();
+                    if (response.status === 200) {
                         response.data.forEach((elem: any) => {
-                            let validator = new Validator();
+                            const validator = new Validator();
                             validator.fromJSON(elem);
                             validators.push(validator);
                         });
                         resolve(validators);
-                    } else if (response.status == 204) {
+                    } else if (response.status === 204) {
                         resolve(validators);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -102,27 +102,27 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getValidator(address: string, height?: number): Promise<Array<Validator>> {
-        return new Promise<Array<Validator>>((resolve, reject) => {
-            let url = uri(this.server_url).directory("validator").filename(address);
+    public getValidator(address: string, height?: number): Promise<Validator[]> {
+        return new Promise<Validator[]>((resolve, reject) => {
+            const url = uri(this.server_url).directory("validator").filename(address);
 
-            if (height != undefined) url.addSearch("height", height);
+            if (height !== undefined) url.addSearch("height", height);
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    let validators: Array<Validator> = new Array<Validator>();
-                    if (response.status == 200) {
+                    const validators: Validator[] = new Array<Validator>();
+                    if (response.status === 200) {
                         response.data.forEach((elem: any) => {
-                            let validator = new Validator();
+                            const validator = new Validator();
                             validator.fromJSON(elem);
                             validators.push(validator);
                         });
                         resolve(validators);
-                    } else if (response.status == 204) {
+                    } else if (response.status === 204) {
                         resolve(validators);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -191,14 +191,14 @@ export class BOAClient {
      */
     public getHeightAt(when: Date): Promise<number> {
         return new Promise<number>((resolve, reject) => {
-            let time = Math.ceil(when.getTime() / 1000);
-            let url = uri(this.server_url).directory("block_height_at").filename(time.toString());
+            const time = Math.ceil(when.getTime() / 1000);
+            const url = uri(this.server_url).directory("block_height_at").filename(time.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) resolve(Number(response.data));
+                    if (response.status === 200) resolve(Number(response.data));
                     else reject(new Error("The date before Genesis Block creation is invalid."));
-                    reject(handleNetworkError({ response: response }));
+                    reject(handleNetworkError({ response }));
                 })
                 .catch((reason: any) => {
                     reject(handleNetworkError(reason));
@@ -213,12 +213,12 @@ export class BOAClient {
      */
     public sendTransaction(tx: Transaction): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            let url = uri(this.agora_url).filename("transaction");
+            const url = uri(this.agora_url).filename("transaction");
 
-            Request.put(url.toString(), { tx: tx })
+            Request.put(url.toString(), { tx })
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) resolve(true);
-                    else reject(handleNetworkError({ response: response }));
+                    if (response.status === 200) resolve(true);
+                    else reject(handleNetworkError({ response }));
                 })
                 .catch((reason: any) => {
                     reject(handleNetworkError(reason));
@@ -232,15 +232,15 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getUTXOs(address: PublicKey): Promise<Array<UnspentTxOutput>> {
-        return new Promise<Array<UnspentTxOutput>>((resolve, reject) => {
-            let url = uri(this.server_url).directory("utxo").filename(address.toString());
+    public getUTXOs(address: PublicKey): Promise<UnspentTxOutput[]> {
+        return new Promise<UnspentTxOutput[]>((resolve, reject) => {
+            const url = uri(this.server_url).directory("utxo").filename(address.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    let utxos: Array<UnspentTxOutput> = new Array<UnspentTxOutput>();
+                    const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        let utxo = new UnspentTxOutput();
+                        const utxo = new UnspentTxOutput();
                         utxo.fromJSON(elem);
                         utxos.push(utxo);
                     });
@@ -258,16 +258,16 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getUTXOInfo(hashes: Array<Hash>): Promise<Array<UnspentTxOutput>> {
-        return new Promise<Array<UnspentTxOutput>>((resolve, reject) => {
-            let url = uri(this.server_url).directory("utxos");
+    public getUTXOInfo(hashes: Hash[]): Promise<UnspentTxOutput[]> {
+        return new Promise<UnspentTxOutput[]>((resolve, reject) => {
+            const url = uri(this.server_url).directory("utxos");
 
-            let utxo_hashes = hashes.map((m) => m.toString());
+            const utxo_hashes = hashes.map((m) => m.toString());
             Request.post(url.toString(), { utxos: utxo_hashes })
                 .then((response: AxiosResponse) => {
-                    let utxos: Array<UnspentTxOutput> = new Array<UnspentTxOutput>();
+                    const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        let utxo = new UnspentTxOutput();
+                        const utxo = new UnspentTxOutput();
                         utxo.fromJSON(elem);
                         utxos.push(utxo);
                     });
@@ -283,7 +283,7 @@ export class BOAClient {
      * Request an Stoa's current block height.
      */
     public getBlockHeight(): Promise<JSBI> {
-        let url = uri(this.server_url).filename("/block_height");
+        const url = uri(this.server_url).filename("/block_height");
 
         return Request.get(url.toString()).then((response: AxiosResponse) => {
             return JSBI.BigInt(response.data);
@@ -294,7 +294,7 @@ export class BOAClient {
      * Returns the connection status to Stoa.
      */
     public getStoaStatus(): Promise<boolean> {
-        let url = uri(this.server_url).filename("/block_height");
+        const url = uri(this.server_url).filename("/block_height");
 
         return Request.get(url.toString())
             .then((response: AxiosResponse) => {
@@ -309,7 +309,7 @@ export class BOAClient {
      * Returns the connection status to Agora.
      */
     public getAgoraStatus(): Promise<boolean> {
-        let url = uri(this.agora_url).filename("/block_height");
+        const url = uri(this.agora_url).filename("/block_height");
 
         return Request.get(url.toString())
             .then((response: AxiosResponse) => {
@@ -328,17 +328,17 @@ export class BOAClient {
      */
     public getTransactionFee(tx_size: number): Promise<TransactionFee> {
         return new Promise<TransactionFee>((resolve, reject) => {
-            let url = uri(this.server_url).directory("transaction/fees").filename(tx_size.toString());
+            const url = uri(this.server_url).directory("transaction/fees").filename(tx_size.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) {
-                        let fees = new TransactionFee();
+                    if (response.status === 200) {
+                        const fees = new TransactionFee();
                         fees.fromJSON(response.data);
                         resolve(fees);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -363,13 +363,13 @@ export class BOAClient {
         address: PublicKey,
         page_size: number,
         page: number,
-        type: Array<string>,
+        type: string[],
         begin?: number,
         end?: number,
         peer?: string
-    ): Promise<Array<ITxHistoryElement>> {
-        return new Promise<Array<ITxHistoryElement>>((resolve, reject) => {
-            let url = uri(this.server_url)
+    ): Promise<ITxHistoryElement[]> {
+        return new Promise<ITxHistoryElement[]>((resolve, reject) => {
+            const url = uri(this.server_url)
                 .directory("/wallet/transactions/history/")
                 .filename(address.toString())
                 .addSearch("pageSize", page_size.toString())
@@ -398,15 +398,15 @@ export class BOAClient {
      */
     public getWalletTransactionOverview(tx_hash: Hash): Promise<ITxOverview> {
         return new Promise<ITxOverview>((resolve, reject) => {
-            let url = uri(this.server_url).directory("/wallet/transaction/overview").filename(tx_hash.toString());
+            const url = uri(this.server_url).directory("/wallet/transaction/overview").filename(tx_hash.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) {
+                    if (response.status === 200) {
                         resolve(response.data);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -419,9 +419,9 @@ export class BOAClient {
      * Request pending transactions.
      * @param address The input address of the pending transaction
      */
-    public getWalletTransactionsPending(address: PublicKey): Promise<Array<IPendingTxs>> {
-        return new Promise<Array<IPendingTxs>>((resolve, reject) => {
-            let url = uri(this.server_url).directory("/wallet/transactions/pending").filename(address.toString());
+    public getWalletTransactionsPending(address: PublicKey): Promise<IPendingTxs[]> {
+        return new Promise<IPendingTxs[]>((resolve, reject) => {
+            const url = uri(this.server_url).directory("/wallet/transactions/pending").filename(address.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
@@ -441,16 +441,16 @@ export class BOAClient {
      */
     public getPendingTransaction(tx_hash: Hash): Promise<Transaction> {
         return new Promise<Transaction>((resolve, reject) => {
-            let url = uri(this.server_url).directory("transaction/pending").filename(tx_hash.toString());
+            const url = uri(this.server_url).directory("transaction/pending").filename(tx_hash.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) {
-                        let tx = Transaction.reviver("", response.data);
+                    if (response.status === 200) {
+                        const tx = Transaction.reviver("", response.data);
                         resolve(tx);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -467,16 +467,16 @@ export class BOAClient {
      */
     public getTransaction(tx_hash: Hash): Promise<Transaction> {
         return new Promise<Transaction>((resolve, reject) => {
-            let url = uri(this.server_url).directory("transaction").filename(tx_hash.toString());
+            const url = uri(this.server_url).directory("transaction").filename(tx_hash.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    if (response.status == 200) {
-                        let tx = Transaction.reviver("", response.data);
+                    if (response.status === 200) {
+                        const tx = Transaction.reviver("", response.data);
                         resolve(tx);
                     } else {
                         // It is not yet defined in Stoa.
-                        reject(handleNetworkError({ response: response }));
+                        reject(handleNetworkError({ response }));
                     }
                 })
                 .catch((reason: any) => {
@@ -493,10 +493,10 @@ export class BOAClient {
     public getVotingFee(payload_size: number): Promise<JSBI> {
         return new Promise<JSBI>(async (resolve, reject) => {
             try {
-                let payload_fee = TxPayloadFee.getFee(payload_size);
-                let tx_size = Transaction.getEstimatedNumberOfBytes(1, 2, payload_size);
-                let fees = await this.getTransactionFee(tx_size);
-                let tx_fee = JSBI.BigInt(fees.high);
+                const payload_fee = TxPayloadFee.getFee(payload_size);
+                const tx_size = Transaction.getEstimatedNumberOfBytes(1, 2, payload_size);
+                const fees = await this.getTransactionFee(tx_size);
+                const tx_fee = JSBI.BigInt(fees.high);
                 resolve(JSBI.add(payload_fee, tx_fee));
             } catch (error) {
                 reject(error);
@@ -514,14 +514,9 @@ export class BOAClient {
      * @returns Promise that resolves or
      * rejects with response from the Stoa
      */
-    public getWalletUTXOs(
-        address: PublicKey,
-        amount: JSBI,
-        type: number,
-        last?: Hash
-    ): Promise<Array<UnspentTxOutput>> {
-        return new Promise<Array<UnspentTxOutput>>((resolve, reject) => {
-            let url = uri(this.server_url)
+    public getWalletUTXOs(address: PublicKey, amount: JSBI, type: number, last?: Hash): Promise<UnspentTxOutput[]> {
+        return new Promise<UnspentTxOutput[]>((resolve, reject) => {
+            const url = uri(this.server_url)
                 .directory("wallet/utxo")
                 .filename(address.toString())
                 .addSearch("amount", amount.toString())
@@ -530,9 +525,9 @@ export class BOAClient {
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
-                    let utxos: Array<UnspentTxOutput> = new Array<UnspentTxOutput>();
+                    const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        let utxo = new UnspentTxOutput();
+                        const utxo = new UnspentTxOutput();
                         utxo.fromJSON(elem);
                         utxos.push(utxo);
                     });
@@ -552,7 +547,7 @@ export class BOAClient {
      */
     public getBalance(address: PublicKey): Promise<Balance> {
         return new Promise<Balance>((resolve, reject) => {
-            let url = uri(this.server_url).directory("wallet/balance").filename(address.toString());
+            const url = uri(this.server_url).directory("wallet/balance").filename(address.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
@@ -574,7 +569,7 @@ export class BOAClient {
      */
     public verifyPayment(tx_hash: Hash): Promise<ISPVStatus> {
         return new Promise<ISPVStatus>((resolve, reject) => {
-            let url = uri(this.server_url).directory("spv").filename(tx_hash.toString());
+            const url = uri(this.server_url).directory("spv").filename(tx_hash.toString());
 
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {

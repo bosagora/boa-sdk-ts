@@ -13,14 +13,14 @@
 
 *******************************************************************************/
 
-import { Scalar, Point } from "./ECC";
-import { Schnorr, Pair } from "./Schnorr";
-import { Signature } from "./Signature";
-import { SodiumHelper } from "../utils/SodiumHelper";
 import { checksum, validate } from "../utils/CRC16";
+import { SodiumHelper } from "../utils/SodiumHelper";
 import { Utils } from "../utils/Utils";
+import { Point, Scalar } from "./ECC";
+import { Pair, Schnorr } from "./Schnorr";
+import { Signature } from "./Signature";
 
-import { base32Encode, base32Decode } from "@ctrl/ts-base32";
+import { base32Decode, base32Encode } from "@ctrl/ts-base32";
 import { bech32m } from "bech32";
 import { SmartBuffer } from "smart-buffer";
 
@@ -65,7 +65,7 @@ export class KeyPair {
      * See_Also: https://github.com/bosagora/agora/blob/bcd14f2c6a3616d7f05ef850dc95fae3eb386760/source/agora/crypto/Key.d#L98-L102
      */
     public static random(): KeyPair {
-        let scalar = Scalar.random();
+        const scalar = Scalar.random();
         if (!scalar.isValid()) throw new Error("SecretKey should always be valid Scalar!");
         return new KeyPair(new PublicKey(scalar.toPoint()), new SecretKey(scalar));
     }
@@ -79,7 +79,7 @@ export class KeyPair {
     public static isValidRandomBytes(r: Buffer): boolean {
         if (r.length !== SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES) return false;
 
-        let t = Buffer.from(r);
+        const t = Buffer.from(r);
         t[SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES - 1] &= 0x1f;
 
         return Utils.compareBuffer(t, Scalar.ZERO) > 0 && Utils.compareBuffer(t, Scalar.ED25519_L) < 0;
@@ -124,19 +124,19 @@ export class PublicKey {
             if (data.length < PublicKey.HumanReadablePart.length || data.slice(0, 3) !== PublicKey.HumanReadablePart)
                 throw new Error("Differ in the human-readable part");
 
-            let decoded = bech32m.decode(data);
+            const decoded = bech32m.decode(data);
             if (decoded.prefix !== PublicKey.HumanReadablePart) throw new Error("This is not the address of BOA");
 
-            let dec_data: Array<number> = [];
+            const dec_data: number[] = [];
             if (!Utils.convertBits(dec_data, decoded.words, 5, 8, false))
                 throw new Error("Bech32 conversion of base failed");
 
             if (dec_data.length !== 1 + SodiumHelper.sodium.crypto_core_ed25519_BYTES)
                 throw new Error("Decoded data size is not normal");
 
-            if (dec_data[0] != VersionByte.AccountID) throw new Error("This is not a valid address type");
+            if (dec_data[0] !== VersionByte.AccountID) throw new Error("This is not a valid address type");
 
-            let key_data = Buffer.from(dec_data.slice(1));
+            const key_data = Buffer.from(dec_data.slice(1));
             if (!SodiumHelper.sodium.crypto_core_ed25519_is_valid_point(key_data))
                 throw new Error("This is not a valid Point");
 
@@ -174,16 +174,16 @@ export class PublicKey {
 
         if (decoded.prefix !== PublicKey.HumanReadablePart) return "This is not the address of BOA";
 
-        let dec_data: Array<number> = [];
+        const dec_data: number[] = [];
         if (!Utils.convertBits(dec_data, decoded.words, 5, 8, false))
             throw new Error("Bech32 conversion of base failed");
 
         if (dec_data.length !== 1 + SodiumHelper.sodium.crypto_core_ed25519_BYTES)
             return "Decoded data size is not normal";
 
-        if (dec_data[0] != VersionByte.AccountID) return "This is not a valid address type";
+        if (dec_data[0] !== VersionByte.AccountID) return "This is not a valid address type";
 
-        let key_data = Buffer.from(dec_data.slice(1));
+        const key_data = Buffer.from(dec_data.slice(1));
         if (!SodiumHelper.sodium.crypto_core_ed25519_is_valid_point(key_data)) return "This is not a valid Point";
 
         return "";
@@ -193,8 +193,8 @@ export class PublicKey {
      * Uses Bech32
      */
     public toString(): string {
-        let unencoded: Array<number> = [];
-        let conv_data: Array<number> = [];
+        const unencoded: number[] = [];
+        const conv_data: number[] = [];
         unencoded.push(VersionByte.AccountID);
         this.data.forEach((m) => unencoded.push(m));
         if (!Utils.convertBits(conv_data, unencoded, 8, 5, true)) throw new Error("Bech32 conversion of base failed");
@@ -252,10 +252,10 @@ export class SecretKey {
     constructor(data: Buffer | Scalar | string) {
         if (typeof data === "string") {
             const decoded = Buffer.from(base32Decode(data));
-            if (decoded.length != 1 + SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES + 2)
+            if (decoded.length !== 1 + SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES + 2)
                 throw new Error("Decoded data size is not normal");
 
-            if (decoded[0] != VersionByte.Seed) throw new Error("This is not a valid seed type");
+            if (decoded[0] !== VersionByte.Seed) throw new Error("This is not a valid seed type");
 
             const body = decoded.slice(0, -2);
             const cs = decoded.slice(-2);
@@ -280,14 +280,14 @@ export class SecretKey {
     public static validate(seed: string): string {
         const decoded = Buffer.from(base32Decode(seed));
 
-        if (decoded.length != 1 + SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES + 2)
+        if (decoded.length !== 1 + SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES + 2)
             return "Decoded data size is not normal";
 
-        if (decoded[0] != VersionByte.Seed) return "This is not a valid seed type";
+        if (decoded[0] !== VersionByte.Seed) return "This is not a valid seed type";
 
         const body = decoded.slice(0, -2);
-        const checksum = decoded.slice(-2);
-        if (!validate(body, checksum)) return "Checksum result do not match";
+        const check_sum = decoded.slice(-2);
+        if (!validate(body, check_sum)) return "Checksum result do not match";
 
         return "";
     }

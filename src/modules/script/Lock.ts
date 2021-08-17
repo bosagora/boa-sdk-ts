@@ -161,8 +161,8 @@ export class Lock {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): Lock {
-        let type = VarInt.toNumber(buffer);
-        let length = VarInt.toNumber(buffer);
+        const type = VarInt.toNumber(buffer);
+        const length = VarInt.toNumber(buffer);
         return new Lock(type, Utils.readBuffer(buffer, length));
     }
 }
@@ -253,7 +253,7 @@ export class Unlock {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): Unlock {
-        let length = VarInt.toNumber(buffer);
+        const length = VarInt.toNumber(buffer);
         return new Unlock(Utils.readBuffer(buffer, length));
     }
 }

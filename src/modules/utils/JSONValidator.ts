@@ -292,7 +292,7 @@ export class JSONValidator {
     private static buildValidator(name: string): Ajv.ValidateFunction {
         let validator = JSONValidator.validators.get(name);
         if (validator === undefined) {
-            let schema = JSONValidator.schemas.get(name);
+            const schema = JSONValidator.schemas.get(name);
             if (schema !== undefined) {
                 validator = ajv.compile(schema);
                 JSONValidator.validators.set(name, validator);
@@ -322,11 +322,11 @@ export class JSONValidator {
         if (this.isValid(validator, candidate) === true) {
             return true;
         } else if (validator.errors !== undefined && validator.errors !== null && validator.errors.length > 0) {
-            if (validator.errors.length == 1) {
+            if (validator.errors.length === 1) {
                 throw new Error(`Validation failed: ${schema_name} - ` + validator.errors[0].message);
             } else {
-                let messages = [];
-                for (let error of validator.errors) messages.push(error.message);
+                const messages = [];
+                for (const error of validator.errors) messages.push(error.message);
                 throw new Error(`Validation failed: ${schema_name} - ` + messages.join("\n"));
             }
         } else {

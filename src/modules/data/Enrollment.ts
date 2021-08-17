@@ -11,10 +11,10 @@
 
 *******************************************************************************/
 
-import { JSONValidator } from "../utils/JSONValidator";
 import { Hash, hashPart } from "../common/Hash";
-import { Signature } from "../common/Signature";
 import { Sig } from "../common/Schnorr";
+import { Signature } from "../common/Signature";
+import { JSONValidator } from "../utils/JSONValidator";
 import { VarInt } from "../utils/VarInt";
 
 import { SmartBuffer } from "smart-buffer";
@@ -108,10 +108,10 @@ export class Enrollment {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): Enrollment {
-        let utxo_key = Hash.deserialize(buffer);
-        let commitment = Hash.deserialize(buffer);
-        let cycle_length = VarInt.toNumber(buffer);
-        let enroll_sig = Sig.deserialize(buffer);
+        const utxo_key = Hash.deserialize(buffer);
+        const commitment = Hash.deserialize(buffer);
+        const cycle_length = VarInt.toNumber(buffer);
+        const enroll_sig = Sig.deserialize(buffer);
 
         return new Enrollment(utxo_key, commitment, cycle_length, enroll_sig);
     }

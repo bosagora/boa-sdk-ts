@@ -15,8 +15,8 @@
 
 *******************************************************************************/
 
-import { Endian, Utils } from "../utils/Utils";
 import { SodiumHelper } from "../utils/SodiumHelper";
+import { Endian, Utils } from "../utils/Utils";
 import { Hash } from "./Hash";
 
 import { SmartBuffer } from "smart-buffer";
@@ -172,7 +172,7 @@ export class Scalar {
      * @throws Will throw an error if an error occurs during calculation.
      */
     public toPoint(): Point {
-        let ret = new Point(Buffer.from(SodiumHelper.sodium.crypto_scalarmult_ed25519_base_noclamp(this.data)));
+        const ret = new Point(Buffer.from(SodiumHelper.sodium.crypto_scalarmult_ed25519_base_noclamp(this.data)));
         if (!ret.isValid) throw new Error("libsodium generated invalid Point from valid Scalar!");
         return ret;
     }
@@ -233,7 +233,7 @@ export class Scalar {
      * This checks whether all values are initial values (0).
      */
     public isNull(): boolean {
-        return Utils.compareBuffer(this.data, Scalar.ZERO) == 0;
+        return Utils.compareBuffer(this.data, Scalar.ZERO) === 0;
     }
 
     /**
@@ -404,7 +404,7 @@ export class Point {
      * This checks whether all values are initial values (0).
      */
     public isNull(): boolean {
-        return Buffer.compare(this.data, Buffer.alloc(SodiumHelper.sodium.crypto_core_ed25519_BYTES)) == 0;
+        return Buffer.compare(this.data, Buffer.alloc(SodiumHelper.sodium.crypto_core_ed25519_BYTES)) === 0;
     }
 
     /**

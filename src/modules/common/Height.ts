@@ -11,9 +11,9 @@
 
 *******************************************************************************/
 
-import { hashPart } from "./Hash";
 import { SmartBuffer } from "smart-buffer";
 import { VarInt } from "../utils/VarInt";
+import { hashPart } from "./Hash";
 
 import JSBI from "jsbi";
 

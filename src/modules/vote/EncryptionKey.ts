@@ -12,9 +12,9 @@
 *******************************************************************************/
 
 import { Hash, hashPart } from "../common/Hash";
-import { Signature } from "../common/Signature";
-import { PublicKey } from "../common/KeyPair";
 import { Height } from "../common/Height";
+import { PublicKey } from "../common/KeyPair";
+import { Signature } from "../common/Signature";
 
 import { SmartBuffer } from "smart-buffer";
 

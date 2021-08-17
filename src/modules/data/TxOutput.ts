@@ -12,10 +12,10 @@
 *******************************************************************************/
 
 import { hashPart } from "../common/Hash";
-import { JSONValidator } from "../utils/JSONValidator";
 import { PublicKey } from "../common/KeyPair";
-import { Utils } from "../utils/Utils";
 import { Lock } from "../script/Lock";
+import { JSONValidator } from "../utils/JSONValidator";
+import { Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
 
 import JSBI from "jsbi";
@@ -130,7 +130,7 @@ export class TxOutput {
 
         if (a.lock.type !== b.lock.type) return a.lock.type < b.lock.type ? -1 : 1;
 
-        let comp = Buffer.compare(a.lock.bytes, b.lock.bytes);
+        const comp = Buffer.compare(a.lock.bytes, b.lock.bytes);
         if (comp !== 0) return comp;
 
         return JSBI.greaterThan(a.value, b.value) ? 1 : JSBI.lessThan(a.value, b.value) ? -1 : 0;
@@ -151,9 +151,9 @@ export class TxOutput {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): TxOutput {
-        let type = VarInt.toNumber(buffer);
-        let lock = Lock.deserialize(buffer);
-        let value = VarInt.toJSBI(buffer);
+        const type = VarInt.toNumber(buffer);
+        const lock = Lock.deserialize(buffer);
+        const value = VarInt.toJSBI(buffer);
         return new TxOutput(type, value, lock);
     }
 }

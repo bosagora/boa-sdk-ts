@@ -37,11 +37,11 @@
 
 *******************************************************************************/
 
-import { hashFull, hashPart } from "./Hash";
-import { Scalar, Point } from "./ECC";
-import { Signature } from "./Signature";
 import { SodiumHelper } from "../utils/SodiumHelper";
 import { Utils } from "../utils/Utils";
+import { Point, Scalar } from "./ECC";
+import { hashFull, hashPart } from "./Hash";
+import { Signature } from "./Signature";
 
 import { SmartBuffer } from "smart-buffer";
 
@@ -114,8 +114,8 @@ export class Sig {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): Sig {
-        let R = new Point(Utils.readBuffer(buffer, SodiumHelper.sodium.crypto_core_ed25519_BYTES));
-        let s = new Scalar(Utils.readBuffer(buffer, SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES));
+        const R = new Point(Utils.readBuffer(buffer, SodiumHelper.sodium.crypto_core_ed25519_BYTES));
+        const s = new Scalar(Utils.readBuffer(buffer, SodiumHelper.sodium.crypto_core_ed25519_SCALARBYTES));
         return new Sig(R, s);
     }
 }
@@ -314,10 +314,10 @@ export class Schnorr {
      */
     public static sign<T>(x: Scalar, X: Point, r: Scalar, R: Point, data: T): Signature {
         // Compute the challenge and reduce the hash to a scalar
-        let c = Scalar.fromHash(hashFull(new Message<T>(X, R, data)));
+        const c = Scalar.fromHash(hashFull(new Message<T>(X, R, data)));
 
         // Compute `s` part of the proof
-        let s: Scalar = Scalar.add(r, Scalar.mul(c, x));
+        const s: Scalar = Scalar.add(r, Scalar.mul(c, x));
         return new Sig(R, s).toSignature();
     }
 
@@ -341,13 +341,13 @@ export class Schnorr {
      * generated number that should neither be reused nor leaked.
      */
     public static verify<T>(X: Point, sig: Signature, data: T): boolean {
-        let s: Sig = Sig.fromSignature(sig);
+        const s: Sig = Sig.fromSignature(sig);
 
         // First check if Scalar from signature is valid
         if (!s.s.isValid()) return false;
 
         /// Compute `s.G`
-        let S = s.s.toPoint();
+        const S = s.s.toPoint();
 
         // Now check that provided Point X is valid
         if (!X.isValid()) return false;
@@ -356,10 +356,10 @@ export class Schnorr {
         if (!s.R.isValid()) return false;
 
         // Compute the challenge and reduce the hash to a scalar
-        let c: Scalar = Scalar.fromHash(hashFull(new Message<T>(X, s.R, data)));
+        const c: Scalar = Scalar.fromHash(hashFull(new Message<T>(X, s.R, data)));
 
         // Compute `R + c*X`
-        let RcX: Point = Point.add(s.R, Point.scalarMul(c, X));
+        const RcX: Point = Point.add(s.R, Point.scalarMul(c, X));
         return Point.compare(S, RcX) === 0;
     }
 }

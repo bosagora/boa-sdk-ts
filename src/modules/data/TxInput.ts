@@ -11,10 +11,10 @@
 
 *******************************************************************************/
 
-import { JSONValidator } from "../utils/JSONValidator";
 import { Hash, hashPart, makeUTXOKey } from "../common/Hash";
 import { Signature } from "../common/Signature";
 import { Unlock } from "../script/Lock";
+import { JSONValidator } from "../utils/JSONValidator";
 import { Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
 
@@ -130,9 +130,9 @@ export class TxInput {
      * @param buffer - The buffer to be deserialized
      */
     public static deserialize(buffer: SmartBuffer): TxInput {
-        let utxo = Hash.deserialize(buffer);
-        let unlock = Unlock.deserialize(buffer);
-        let unlock_age = VarInt.toNumber(buffer);
+        const utxo = Hash.deserialize(buffer);
+        const unlock = Unlock.deserialize(buffer);
+        const unlock_age = VarInt.toNumber(buffer);
         return new TxInput(utxo, unlock, unlock_age);
     }
 }
