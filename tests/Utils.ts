@@ -773,6 +773,25 @@ export class TestStoa {
             else res.status(200).send(JSON.stringify(height.toString()));
         });
 
+        // GET /wallet/blocks/header
+        this.app.get("/wallet/blocks/header", (req: express.Request, res: express.Response) => {
+            let height: number;
+            if (req.query.height === undefined) {
+                height = 10;
+            } else {
+                height = Number(req.query.height.toString());
+            }
+            const zero = 1609459200;
+            const time_stamp = zero + height * 60 * 10;
+            const info = {
+                height: height.toString(),
+                hash: new sdk.Hash(Buffer.alloc(sdk.Hash.Width)).toString(),
+                merkle_root: new sdk.Hash(Buffer.alloc(sdk.Hash.Width)).toString(),
+                time_stamp,
+            };
+            res.status(200).send(JSON.stringify(info));
+        });
+
         // GET /wallet/balance/:address
         this.app.get("/wallet/balance/:address", (req: express.Request, res: express.Response) => {
             const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);

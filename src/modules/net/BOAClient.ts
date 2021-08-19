@@ -207,6 +207,35 @@ export class BOAClient {
     }
 
     /**
+     * Request the creation time of the entered block height.
+     * @param height The block height
+     * @returns Returns the creation time if a block of the entered height exists.
+     * Otherwise, returns the expected creation time.
+     */
+    public getHeightToTime(height: JSBI): Promise<number> {
+        return new Promise<number>(async (resolve, reject) => {
+            this.getBlockHeight()
+                .then((last) => {
+                    const url = uri(this.server_url).directory("/wallet/blocks/header");
+                    if (JSBI.lessThanOrEqual(height, last)) url.addSearch("height", height.toString());
+                    Request.get(url.toString())
+                        .then((response: AxiosResponse) => {
+                            const stoa_height = JSBI.BigInt(response.data.height);
+                            const stoa_timestamp = Number(response.data.time_stamp);
+                            const estimated_timestamp =
+                                stoa_timestamp +
+                                JSBI.toNumber(JSBI.multiply(JSBI.subtract(height, stoa_height), JSBI.BigInt(60 * 10)));
+                            resolve(estimated_timestamp);
+                        })
+                        .catch((reason: any) => {
+                            reject(handleNetworkError(reason));
+                        });
+                })
+                .catch(reject);
+        });
+    }
+
+    /**
      * Saves the data to the blockchain
      * @param tx The instance of the Transaction
      * @returns Returns true if success, otherwise returns false

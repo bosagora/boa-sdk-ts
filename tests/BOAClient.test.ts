@@ -1009,4 +1009,27 @@ describe("BOA Client", () => {
         assert.deepStrictEqual(second_utxos[1].utxo.toString(), sample_utxo_client[5].utxo);
         assert.deepStrictEqual(second_utxos[2].utxo.toString(), sample_utxo_client[6].utxo);
     });
+
+    it("test for getHeightToTime", async () => {
+        // Set URL
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
+
+        // Create BOA Client
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+
+        const zero = 1609459200;
+
+        let time_stamp = await boa_client.getHeightToTime(sdk.JSBI.BigInt(0));
+        assert.deepStrictEqual(time_stamp, zero);
+
+        time_stamp = await boa_client.getHeightToTime(sdk.JSBI.BigInt(1));
+        assert.deepStrictEqual(time_stamp, zero + 1 * 60 * 10);
+
+        time_stamp = await boa_client.getHeightToTime(sdk.JSBI.BigInt(10));
+        assert.deepStrictEqual(time_stamp, zero + 10 * 60 * 10);
+
+        time_stamp = await boa_client.getHeightToTime(sdk.JSBI.BigInt(11));
+        assert.deepStrictEqual(time_stamp, zero + 11 * 60 * 10);
+    });
 });
