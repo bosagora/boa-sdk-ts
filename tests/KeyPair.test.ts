@@ -11,11 +11,12 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
+import { base32Decode, base32Encode } from "@ctrl/ts-base32";
 import * as assert from "assert";
-import { base32Encode, base32Decode } from "@ctrl/ts-base32";
 import { bech32, bech32m } from "bech32";
 
 describe("Public Key", () => {
@@ -25,7 +26,7 @@ describe("Public Key", () => {
     });
 
     it("Test Bech32", () => {
-        let addresses_bech32 = [
+        const addresses_bech32 = [
             // CoinNet Genesis Address
             // GDGENYO6TWO6EZG2OXEBVDCNKLHCV2UFLLZY6TJMWTGR23UMJHVHLHKJ
             {
@@ -110,9 +111,9 @@ describe("Public Key", () => {
         ];
 
         addresses_bech32.forEach((m) => {
-            let data: Array<number> = [];
-            let conv_data: Array<number> = [];
-            let revert_data: Array<number> = [];
+            const data: number[] = [];
+            const conv_data: number[] = [];
+            const revert_data: number[] = [];
 
             data.push(48);
             data.push(...m.bytes);
@@ -120,11 +121,11 @@ describe("Public Key", () => {
             sdk.Utils.convertBits(revert_data, conv_data, 5, 8, false);
             assert.deepStrictEqual(revert_data, data);
 
-            let addr_str = bech32.encode("boa", conv_data);
+            const addr_str = bech32.encode("boa", conv_data);
             assert.deepStrictEqual(addr_str, m.address);
 
-            let dec = bech32.decode(m.address);
-            let dec_data: Array<number> = [];
+            const dec = bech32.decode(m.address);
+            const dec_data: number[] = [];
             assert.deepStrictEqual(dec.words, conv_data);
             sdk.Utils.convertBits(dec_data, dec.words, 5, 8, false);
             assert.deepStrictEqual(dec_data, data);
@@ -132,8 +133,8 @@ describe("Public Key", () => {
     });
 
     it("Extract the public key from a string then convert it back into a string and compare it.", () => {
-        let address = "boa1xrv266cegdthdc87uche9zvj8842shz3sdyvw0qecpgeykyv4ynssuz4lg0";
-        let public_key = new sdk.PublicKey(address);
+        const address = "boa1xrv266cegdthdc87uche9zvj8842shz3sdyvw0qecpgeykyv4ynssuz4lg0";
+        const public_key = new sdk.PublicKey(address);
         assert.strictEqual(public_key.toString(), address);
     });
 
@@ -151,14 +152,14 @@ describe("Public Key", () => {
             ""
         );
 
-        let pk = new sdk.PublicKey("boa1xrv266cegdthdc87uche9zvj8842shz3sdyvw0qecpgeykyv4ynssuz4lg0");
-        let data: Array<number> = [];
-        let conv_data: Array<number> = [];
+        const pk = new sdk.PublicKey("boa1xrv266cegdthdc87uche9zvj8842shz3sdyvw0qecpgeykyv4ynssuz4lg0");
+        const data: number[] = [];
+        const conv_data: number[] = [];
         data.push(48);
         pk.data.forEach((m) => data.push(m));
-        let invalid_data = data.slice(0, -1);
+        const invalid_data = data.slice(0, -1);
         sdk.Utils.convertBits(conv_data, invalid_data, 8, 5, true);
-        let invalid_addr_str = bech32m.encode("boa", conv_data);
+        const invalid_addr_str = bech32m.encode("boa", conv_data);
         assert.strictEqual(sdk.PublicKey.validate(invalid_addr_str), "Decoded data size is not normal");
     });
 });
@@ -170,8 +171,8 @@ describe("Secret Key", () => {
     });
 
     it("Extract the seed from a string then convert it back into a string and compare it.", () => {
-        let secret_str = "SDV3GLVZ6W7R7UFB2EMMY4BBFJWNCQB5FTCXUMD5ZCFTDEVZZ3RQ2BZI";
-        let secret_key = new sdk.SecretKey(secret_str);
+        const secret_str = "SDV3GLVZ6W7R7UFB2EMMY4BBFJWNCQB5FTCXUMD5ZCFTDEVZZ3RQ2BZI";
+        const secret_key = new sdk.SecretKey(secret_str);
         assert.strictEqual(secret_key.toString(false), secret_str);
     });
 
@@ -189,8 +190,8 @@ describe("Secret Key", () => {
         const decoded = Buffer.from(base32Decode("SBBUWIMSX5VL4KVFKY44GF6Q6R5LS2Z5B7CTAZBNCNPLS4UKFVDXC7TQ"));
         const body = decoded.slice(0, -2);
         const checksum = decoded.slice(-2);
-        let invalid_decoded = Buffer.concat([body, checksum.map((n) => ~n)]);
-        let invalid_seed = base32Encode(invalid_decoded);
+        const invalid_decoded = Buffer.concat([body, checksum.map((n) => ~n)]);
+        const invalid_seed = base32Encode(invalid_decoded);
         assert.strictEqual(sdk.SecretKey.validate(invalid_seed), "Checksum result do not match");
     });
 });
@@ -203,26 +204,26 @@ describe("KeyPair", () => {
 
     // See: https://github.com/bosagora/agora/blob/bcd14f2c6a3616d7f05ef850dc95fae3eb386760/source/agora/crypto/Key.d#L391-L404
     it("Test of KeyPair.fromSeed, sign, verify", () => {
-        let address = `boa1xrdwry6fpk7a57k4gwyj3mwnf59w808nygtuxsgdrpmv4p7ua2hqx78z5en`;
-        let seed = `SDV3GLVZ6W7R7UFB2EMMY4BBFJWNCQB5FTCXUMD5ZCFTDEVZZ3RQ2BZI`;
+        const address = `boa1xrdwry6fpk7a57k4gwyj3mwnf59w808nygtuxsgdrpmv4p7ua2hqx78z5en`;
+        const seed = `SDV3GLVZ6W7R7UFB2EMMY4BBFJWNCQB5FTCXUMD5ZCFTDEVZZ3RQ2BZI`;
 
-        let kp = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
+        const kp = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
         assert.strictEqual(kp.address.toString(), address);
 
-        let signature = kp.secret.sign<Buffer>(Buffer.from("Hello World"));
+        const signature = kp.secret.sign<Buffer>(Buffer.from("Hello World"));
         assert.ok(kp.address.verify<Buffer>(signature, Buffer.from("Hello World")));
     });
 
     it("Test of KeyPair.random, sign, verify, reproduce", () => {
-        let random_kp = sdk.KeyPair.random();
+        const random_kp = sdk.KeyPair.random();
 
-        let random_kp_signature = random_kp.secret.sign<Buffer>(Buffer.from("Hello World"));
+        const random_kp_signature = random_kp.secret.sign<Buffer>(Buffer.from("Hello World"));
         assert.ok(random_kp.address.verify<Buffer>(random_kp_signature, Buffer.from("Hello World")));
 
         // Test whether randomly generated key-pair are reproducible.
-        let reproduced_kp = sdk.KeyPair.fromSeed(random_kp.secret);
+        const reproduced_kp = sdk.KeyPair.fromSeed(random_kp.secret);
 
-        let reproduced_kp_signature = reproduced_kp.secret.sign<Buffer>(Buffer.from("Hello World"));
+        const reproduced_kp_signature = reproduced_kp.secret.sign<Buffer>(Buffer.from("Hello World"));
         assert.ok(reproduced_kp.address.verify<Buffer>(reproduced_kp_signature, Buffer.from("Hello World")));
 
         assert.deepStrictEqual(random_kp.secret, reproduced_kp.secret);

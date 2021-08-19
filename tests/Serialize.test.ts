@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 import { SmartBuffer } from "smart-buffer";
@@ -26,7 +27,7 @@ describe("Serialize and Deserialize", () => {
 
     before("Prepare test for serialize and deserialize", () => {
         // This is the genesis block of Agora
-        let sample = {
+        const sample = {
             header: {
                 prev_block:
                     "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
@@ -235,7 +236,7 @@ describe("Serialize and Deserialize", () => {
     });
 
     it("Test that serialize and deserialize transaction", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         block.txs[0].serialize(buffer);
         buffer.readOffset = 0;
         assert.deepStrictEqual(
@@ -244,12 +245,12 @@ describe("Serialize and Deserialize", () => {
         );
 
         buffer.readOffset = 0;
-        let tx = sdk.Transaction.deserialize(buffer);
+        const tx = sdk.Transaction.deserialize(buffer);
         assert.deepStrictEqual(block.txs[0], tx, "When serialize, then deserialize, it does not match the original.");
     });
 
     it("Test that serialize and deserialize enrollment", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         block.header.enrollments[0].serialize(buffer);
         buffer.readOffset = 0;
         assert.strictEqual(
@@ -258,7 +259,7 @@ describe("Serialize and Deserialize", () => {
         );
 
         buffer.readOffset = 0;
-        let enrollment = sdk.Enrollment.deserialize(buffer);
+        const enrollment = sdk.Enrollment.deserialize(buffer);
         assert.deepStrictEqual(
             block.header.enrollments[0],
             enrollment,
@@ -267,13 +268,13 @@ describe("Serialize and Deserialize", () => {
     });
 
     it("Test that serialize and deserialize bit-mask", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         block.header.validators.serialize(buffer);
         buffer.readOffset = 0;
         assert.strictEqual(buffer.toBuffer().toString("hex"), "040140");
 
         buffer.readOffset = 0;
-        let bit_mask = sdk.BitMask.deserialize(buffer);
+        const bit_mask = sdk.BitMask.deserialize(buffer);
         assert.deepStrictEqual(
             block.header.validators,
             bit_mask,
@@ -282,7 +283,7 @@ describe("Serialize and Deserialize", () => {
     });
 
     it("Test that serialize and deserialize block header", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         block.header.serialize(buffer);
         buffer.readOffset = 0;
         assert.strictEqual(
@@ -290,7 +291,7 @@ describe("Serialize and Deserialize", () => {
             "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009e9acfc2fb732d23a8135e044f1a1017d69a86a95a77ccb7dce98bca8e5e6141aee9aaad82ace07214e4f0f7c80941fdd8844b18c5381a7fbbbb5a7f119a5b25000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004014000063bd450906d787b63791eb7f66fd6622014d59b1262f9697420732bc822772e790caf56ad071c0a4447480585496561c89383fb15bc3a40a23e5a312c6a24df0032639f196c8fa4ffffd24ccf02a4c12b6a93ab8816a9670e77306b5c72c171d62807b40a0138f6647c161794c0c3ef6c9fa74f468761a28807a01e084219a845140604b2ee69c88a419291318312a119f6f8be7b47e42b353fb29ce97f4059f9e349c4af51fe7b73b72945db5cca0cd8ad6ef378de31ddeda209bdab2e849a890820ac05d7a0c7c2e7e1c46681ccff7a32446dacaecaf766e907e974b137bc56d6e0e736088871b19c0c67064be9610bac0f17067b13568bd2b7efda4c2d5d8b3910e5580a53dba0505e4a9265a7da012d3750f6b5789c0f160ef852ed55259c07d854dd9f36dea6adf42577607b6dea0fcffa50c1e8a926e1aa7a944e40012467142cd22af5f70f9c4c4383139dd604270fd8fb9b99f00942f1c2e7b803bfceff07af526b8594df82b29a324b5de795b99aaaf93babbe6c977f0c387d697921700593888364cd78c8ce5d3abfdf88faf015ba585fd98be186a42696342b80558985f747014431598ff0a28f7aabbd60f17536e4266626e8064ca72814dfe4f383850c9c293d358fd611d22f37f0510ee7cb0856d6e086b452d016f41df518e2d2e5a7c7f33c6b6a9d9074dffa5b0d0feed07aa08909103aa5f7daa9ef62e8822507144fcd98678ad5e455dea5516f97d0f8c8e368bab1119a2f7be3a69019beef5e370502cc28307e8256d7be338fd524ab6efeea907747f04d9196d8f4c243b7010dc8516f604bab1518e3e11a968c1e4b3e8a1a40df2e69f564ae2f4df1913d3f152913af960673798d0f12a8f4018aa3dec7b1ce2a8bc322e11246f7af4d3c9191bb37e23934f978191f6b7fe5feb8033966f5fb1125607a78a5902a91de3163a03c3e41bb1b2bb1c0bd38a17c62c02bcb0fe96d1eada6a5e303108427ed2e892714f576feaad73a99cf4ecad64279d4d7579d8479437efb6115e610983dc6c6a3e9d8a5737cc90bcf01011bfe3a8a3028e01644c8426677f2e5003bf1b3674e5d07da6bdb579c215549b36e2bf65b5ee5b9728ba386644dc68dca515ccca88880eb2ab04a1deccbe913b410709a911018130bf743f56f256c3678e4d67fb685a4a58e0ad3d6a1ff88e2e27a805162d28aac101761653e918f373a9137e019b34b4401b78d0fd2eb7516e2e168d7fe2ba69b47312979b2f9e907f357916fd7a7740d14a4a2bcab100af733a9309d4e37e2145b8abf159426c2d47ac7ba6e87f58983012cef18d3d2408b8ee335186d59055c343362c8412863fad4cbd0f61aaffbe10f97fb5a0b2c0c3ed33342c5b58cd451cb126f5aa85febe3ba4e5a2a20f6a8c5abfbd199a5accec75d89222f9476964386b4e392119ca6eb70ae998330416da5ad5dcf0b07ae957e8e9bde98bdcccfc1f98510d290d6f3083120a55f89bb21311f78455aa846eba80f9693fa5ee8f85dfdd4a9e70139c99c2822252daf5dbff3e2141c9a0a8dc18845ffec94bb199326c5b69d9d319ba723a9512c6392b3e4d02ea7b98044e16210d8001d9221b1f31f2fba931dbf2e27c1e7a9d754a42d3343860d0000"
         );
         buffer.readOffset = 0;
-        let header = sdk.BlockHeader.deserialize(buffer);
+        const header = sdk.BlockHeader.deserialize(buffer);
         assert.deepStrictEqual(
             block.header,
             header,
@@ -299,7 +300,7 @@ describe("Serialize and Deserialize", () => {
     });
 
     it("Test that serialize and deserialize block", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         block.serialize(buffer);
         buffer.readOffset = 0;
         assert.strictEqual(
@@ -308,7 +309,7 @@ describe("Serialize and Deserialize", () => {
         );
 
         buffer.readOffset = 0;
-        let deserialized_block = sdk.Block.deserialize(buffer);
+        const deserialized_block = sdk.Block.deserialize(buffer);
         assert.deepStrictEqual(
             block,
             deserialized_block,

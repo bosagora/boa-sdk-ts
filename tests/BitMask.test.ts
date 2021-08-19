@@ -11,8 +11,10 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
+
 import assert from "assert";
 import { SmartBuffer } from "smart-buffer";
 

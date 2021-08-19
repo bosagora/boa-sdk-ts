@@ -11,28 +11,29 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
 describe("TxCanceller", () => {
-    let key_pairs: Array<sdk.KeyPair>;
-    let utxo_array: Array<any>;
+    let key_pairs: sdk.KeyPair[];
+    let utxo_array: any[];
 
     function makeOriginalTransaction(
         owner_keypair: sdk.KeyPair,
         in_amount: sdk.JSBI,
         out_amount: sdk.JSBI
     ): sdk.Transaction {
-        let builder = new sdk.TxBuilder(owner_keypair);
+        const builder = new sdk.TxBuilder(owner_keypair);
 
-        let output_address = "boa1xqd00qsu7n5ykyckc23wmcjglfalcdea3x2af88hx2x5qx65x7w8g2r5t29";
-        let input_count = 2;
-        let output_count = 2;
-        let tx_size = sdk.Transaction.getEstimatedNumberOfBytes(input_count, output_count, 0);
+        const output_address = "boa1xqd00qsu7n5ykyckc23wmcjglfalcdea3x2af88hx2x5qx65x7w8g2r5t29";
+        const input_count = 2;
+        const output_count = 2;
+        const tx_size = sdk.Transaction.getEstimatedNumberOfBytes(input_count, output_count, 0);
         let tx_fee = sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * tx_size);
-        let minimum = sdk.JSBI.BigInt(100_000);
+        const minimum = sdk.JSBI.BigInt(100_000);
         if (sdk.JSBI.lessThan(tx_fee, minimum)) tx_fee = sdk.JSBI.BigInt(minimum);
 
         builder.addInput(
@@ -88,11 +89,11 @@ describe("TxCanceller", () => {
     });
 
     it("Can not cancel a frozen transaction", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // change transaction output type
         utxo_data[0].type = sdk.OutputType.Freeze;
         const utxos = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
@@ -109,11 +110,11 @@ describe("TxCanceller", () => {
     });
 
     it("Transactions that do not exist UTXO cannot be canceled.", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // remove one utxo
         utxo_data.pop();
         const utxos = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
@@ -130,11 +131,11 @@ describe("TxCanceller", () => {
     });
 
     it("Transactions with UTXO that `LockType` is not `Key` cannot be cancelled.", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // change a lock type
         utxo_data[0].lock_type = sdk.LockType.KeyHash;
         const utxos = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
@@ -151,15 +152,15 @@ describe("TxCanceller", () => {
     });
 
     it("Transactions cannot be canceled without a KeyPair to use UTXO.", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         const utxos = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
 
         // remove a keypair
-        let keys = key_pairs.slice();
+        const keys = key_pairs.slice();
         keys.pop();
 
         const tx = makeOriginalTransaction(
@@ -174,12 +175,12 @@ describe("TxCanceller", () => {
     });
 
     it("Transactions with amounts of UTXO that are not large enough cannot be cancelled.", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // change amount
         utxo_data[0].amount = "52000";
         utxo_data[1].amount = "52000";
         const utxos = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
@@ -192,9 +193,9 @@ describe("TxCanceller", () => {
     });
 
     it("Successful testing of cancellation transactions", () => {
-        let utxo_data = JSON.parse(JSON.stringify(utxo_array));
-        const utxos: Array<sdk.UnspentTxOutput> = utxo_data.map((m: any) => {
-            let utxo = new sdk.UnspentTxOutput();
+        const utxo_data = JSON.parse(JSON.stringify(utxo_array));
+        const utxos: sdk.UnspentTxOutput[] = utxo_data.map((m: any) => {
+            const utxo = new sdk.UnspentTxOutput();
             utxo.fromJSON(m);
             return utxo;
         });
@@ -209,7 +210,7 @@ describe("TxCanceller", () => {
         assert.strictEqual(res.code, sdk.TxCancelResultCode.Success);
         assert.ok(res.tx !== undefined);
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673",
@@ -249,14 +250,14 @@ describe("TxCanceller", () => {
         };
 
         if (res.tx !== undefined) {
-            let tx_size = tx.getNumberOfBytes();
+            const tx_size = tx.getNumberOfBytes();
             let total_fee = sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * tx_size);
-            let minimum = sdk.JSBI.BigInt(100_000);
+            const minimum = sdk.JSBI.BigInt(100_000);
             if (sdk.JSBI.lessThan(total_fee, minimum)) total_fee = sdk.JSBI.BigInt(minimum);
 
-            let adjusted_fee = sdk.JSBI.divide(total_fee, sdk.JSBI.BigInt(tx_size));
+            const adjusted_fee = sdk.JSBI.divide(total_fee, sdk.JSBI.BigInt(tx_size));
 
-            let cancel_adjusted_fee = sdk.JSBI.divide(
+            const cancel_adjusted_fee = sdk.JSBI.divide(
                 sdk.JSBI.multiply(
                     adjusted_fee,
                     sdk.JSBI.add(sdk.JSBI.BigInt(100), sdk.JSBI.BigInt(sdk.TxCanceller.double_spent_threshold_pct))
@@ -264,11 +265,11 @@ describe("TxCanceller", () => {
                 sdk.JSBI.BigInt(100)
             );
 
-            let cancel_tx_size = res.tx.getNumberOfBytes();
-            let cancel_total_fee = sdk.JSBI.multiply(cancel_adjusted_fee, sdk.JSBI.BigInt(cancel_tx_size));
+            const cancel_tx_size = res.tx.getNumberOfBytes();
+            const cancel_total_fee = sdk.JSBI.multiply(cancel_adjusted_fee, sdk.JSBI.BigInt(cancel_tx_size));
 
-            let in_sum = utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
-            let out_sum = res.tx.outputs.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.value), sdk.JSBI.BigInt(0));
+            const in_sum = utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
+            const out_sum = res.tx.outputs.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.value), sdk.JSBI.BigInt(0));
             assert.deepStrictEqual(sdk.JSBI.subtract(in_sum, out_sum), cancel_total_fee);
 
             res.tx.inputs.forEach((value: sdk.TxInput, idx: number) => {

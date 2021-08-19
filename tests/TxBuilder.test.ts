@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
@@ -43,9 +44,9 @@ describe("TxBuilder", () => {
     });
 
     it("When trying to send the wrong amount", () => {
-        let destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
-        let builder = new sdk.TxBuilder(owner);
-        let amount = sdk.JSBI.BigInt(0);
+        const destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
+        const builder = new sdk.TxBuilder(owner);
+        const amount = sdk.JSBI.BigInt(0);
         builder.addInput(utxo_data1.utxo, utxo_data1.amount);
         assert.throws(() => {
             builder.addOutput(destination, amount);
@@ -53,9 +54,9 @@ describe("TxBuilder", () => {
     });
 
     it("When trying to send an amount greater than the amount of UTXO.", () => {
-        let destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
-        let builder = new sdk.TxBuilder(owner);
-        let amount = utxo_data1.amount + BigInt(1);
+        const destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
+        const builder = new sdk.TxBuilder(owner);
+        const amount = utxo_data1.amount + BigInt(1);
         builder.addInput(utxo_data1.utxo, utxo_data1.amount);
         assert.throws(() => {
             builder.addOutput(destination, amount);
@@ -63,8 +64,8 @@ describe("TxBuilder", () => {
     });
 
     it("Test to create a transaction without data payload", () => {
-        let destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
-        let builder = new sdk.TxBuilder(owner);
+        const destination = new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac");
+        const builder = new sdk.TxBuilder(owner);
         let tx: sdk.Transaction;
         try {
             tx = builder
@@ -76,7 +77,7 @@ describe("TxBuilder", () => {
             assert.fail(error);
         }
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x4dde806d2e09367f9d5bdaaf46deab01a336a64fdb088dbb94edb171560c63cf6a39377bf0c4d35118775681d989dee46531926299463256da303553f09be6ef",
@@ -119,11 +120,11 @@ describe("TxBuilder", () => {
     });
 
     it("Test to create a transaction with data payload", () => {
-        let builder = new sdk.TxBuilder(owner);
+        const builder = new sdk.TxBuilder(owner);
         let tx: sdk.Transaction;
-        let payload = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.JSBI.BigInt(500000);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const payload = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.JSBI.BigInt(500000);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
         try {
             tx = builder
@@ -135,7 +136,7 @@ describe("TxBuilder", () => {
             assert.fail(error);
         }
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x4dde806d2e09367f9d5bdaaf46deab01a336a64fdb088dbb94edb171560c63cf6a39377bf0c4d35118775681d989dee46531926299463256da303553f09be6ef",
@@ -173,11 +174,11 @@ describe("TxBuilder", () => {
     });
 
     it("Test to create a transaction with data payload - no output", () => {
-        let builder = new sdk.TxBuilder(owner);
+        const builder = new sdk.TxBuilder(owner);
         let tx: sdk.Transaction;
-        let payload = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.JSBI.BigInt(1000000000);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const payload = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.JSBI.BigInt(1000000000);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
         assert.throws(() => {
             tx = builder
@@ -188,11 +189,11 @@ describe("TxBuilder", () => {
     });
 
     it("Test to create a transaction with data payload - exist output", () => {
-        let builder = new sdk.TxBuilder(owner);
+        const builder = new sdk.TxBuilder(owner);
         let tx: sdk.Transaction;
-        let payload = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.JSBI.BigInt(1000000000);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const payload = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.JSBI.BigInt(1000000000);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
         assert.doesNotThrow(() => {
             tx = builder

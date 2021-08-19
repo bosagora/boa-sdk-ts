@@ -11,17 +11,20 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
-import { SmartBuffer } from "smart-buffer";
+// tslint:disable-next-line:no-implicit-dependencies
+import bodyParser from "body-parser";
+// tslint:disable-next-line:no-implicit-dependencies
 import express from "express";
 import http from "http";
+import { SmartBuffer } from "smart-buffer";
 import URI from "urijs";
-import bodyParser from "body-parser";
 
-let sample_txs_history = [
+const sample_txs_history = [
     {
         display_tx_type: "payload",
         address: "boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e",
@@ -92,7 +95,7 @@ export class TestStoa {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -103,8 +106,8 @@ export class TestStoa {
      */
     public start(): Promise<void> {
         this.app.get("/wallet/transactions/history/:address", (req: express.Request, res: express.Response) => {
-            let address: string = String(req.params.address);
-            if (sdk.PublicKey.validate(address) != "") {
+            const address: string = String(req.params.address);
+            if (sdk.PublicKey.validate(address) !== "") {
                 res.status(400).send(`Invalid value for parameter 'address': ${address}`);
                 return;
             }
@@ -112,7 +115,7 @@ export class TestStoa {
         });
 
         this.app.get("/transaction/:hash", (req: express.Request, res: express.Response) => {
-            let hash: string = String(req.params.hash);
+            const hash: string = String(req.params.hash);
             let tx_hash: sdk.Hash;
             try {
                 tx_hash = new sdk.Hash(hash);
@@ -120,7 +123,7 @@ export class TestStoa {
                     tx_hash.toString() ===
                     "0x9a7217177205fda7a0a2716fbe86a8928e624b10b0a19414b354b2bb84a12524a0993ba724b6c9c7e5afe3ed25860ce4e006e6a390933b4d38eb6de2da575f7e"
                 ) {
-                    let tx = new sdk.Transaction(
+                    const tx = new sdk.Transaction(
                         [
                             new sdk.TxInput(
                                 new sdk.Hash(
@@ -144,7 +147,7 @@ export class TestStoa {
                     tx_hash.toString() ===
                     "0x2ad019850d964384812a15fa5413a9a9ae6dc21d96c7bb93d7c50bafb63145e7ff4252c6126e617502c6e2ef89198b0d02d3450a6d4301aa8d25fa21c9964209"
                 ) {
-                    let tx = new sdk.Transaction(
+                    const tx = new sdk.Transaction(
                         [
                             new sdk.TxInput(
                                 new sdk.Hash(
@@ -224,7 +227,7 @@ export class TestStoa {
                     );
                     res.status(200).send(JSON.stringify(tx));
                 } else {
-                    let tx = new sdk.Transaction(
+                    const tx = new sdk.Transaction(
                         [
                             new sdk.TxInput(
                                 new sdk.Hash(
@@ -269,7 +272,7 @@ export class TestStoa {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -303,7 +306,7 @@ class TestAgora {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -341,7 +344,7 @@ class TestAgora {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -353,8 +356,8 @@ class TestAgora {
 describe("Checking the proposal and ballot data", () => {
     let stoa_server: TestStoa;
     let agora_server: TestAgora;
-    let stoa_port: string = "5000";
-    let agora_port: string = "2826";
+    const stoa_port: string = "5000";
+    const agora_port: string = "2826";
 
     before("Wait for the package libsodium to finish loading", async () => {
         sdk.SodiumHelper.assign(new BOASodium());
@@ -380,7 +383,7 @@ describe("Checking the proposal and ballot data", () => {
     });
 
     it("Test data for proposals and votes", async () => {
-        let expected_data = {
+        const expected_data = {
             app_name: "Votera",
             proposal_type: sdk.ProposalType.Fund,
             proposal_id: "ID1234567890",
@@ -396,7 +399,7 @@ describe("Checking the proposal and ballot data", () => {
             proposal_fee_address: new sdk.PublicKey("boa1xrzwvvw6l6d9k84ansqgs9yrtsetpv44wfn8zm9a7lehuej3ssskxth867s"),
         };
 
-        let validators = [
+        const validators = [
             "boa1xr8q66jvs4xye4yx80vv0rrv7gh0quue3jrntl7tkseagj3t07767tg808f",
             "boa1xr8p66enrg38qshzn6slnqe3fye6g6xa42kj8hm364yn238ks5ywc59nwyj",
             "boa1xr8z66s0dcagyd57ykfwm3yplgv4x6zasf42hxn5gkmx0lxjtceq7my0vqc",
@@ -409,29 +412,29 @@ describe("Checking the proposal and ballot data", () => {
         ];
 
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // It queries the last 10 transactions that have a data payload of a particular address.
-        let public_key = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
-        let history = await boa_client.getWalletTransactionsHistory(public_key, 10, 1, ["payload"]);
+        const public_key = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
+        const history = await boa_client.getWalletTransactionsHistory(public_key, 10, 1, ["payload"]);
 
-        for (let idx = 0; idx < history.length; idx++) {
-            if (history[idx].display_tx_type === "payload") {
-                let tx = await boa_client.getTransaction(new sdk.Hash(history[idx].tx_hash));
-                let header = tx.payload.slice(1, 9);
+        for (const elem of history) {
+            if (elem.display_tx_type === "payload") {
+                const tx = await boa_client.getTransaction(new sdk.Hash(elem.tx_hash));
+                const header = tx.payload.slice(1, 9);
                 if (Buffer.compare(Buffer.from(sdk.ProposalFeeData.HEADER), header) === 0) {
                     // Exceptions should be handled in actual use.
                     assert.doesNotThrow(() => {
-                        let payload = sdk.ProposalFeeData.deserialize(SmartBuffer.fromBuffer(tx.payload));
+                        const payload = sdk.ProposalFeeData.deserialize(SmartBuffer.fromBuffer(tx.payload));
                         assert.deepStrictEqual(payload.app_name, expected_data.app_name);
                         // This verifies that the proposed ID is the same.
                         assert.deepStrictEqual(payload.proposal_id, expected_data.proposal_id);
                         // This verifies that the deposit address and amount of the proposed fee are appropriate.
-                        let find_idx = tx.outputs.findIndex(
+                        const find_idx = tx.outputs.findIndex(
                             (o) =>
                                 new sdk.PublicKey(o.lock.bytes).toString() ===
                                 expected_data.proposal_fee_address.toString()
@@ -443,7 +446,7 @@ describe("Checking the proposal and ballot data", () => {
                     // Exceptions should be handled in actual use.
                     assert.doesNotThrow(() => {
                         // This verifies that the contents of the proposed data are the same.
-                        let payload = sdk.ProposalData.deserialize(SmartBuffer.fromBuffer(tx.payload));
+                        const payload = sdk.ProposalData.deserialize(SmartBuffer.fromBuffer(tx.payload));
                         assert.deepStrictEqual(payload.app_name, expected_data.app_name);
                         assert.deepStrictEqual(payload.proposal_type, expected_data.proposal_type);
                         assert.deepStrictEqual(payload.proposal_id, expected_data.proposal_id);
@@ -458,11 +461,11 @@ describe("Checking the proposal and ballot data", () => {
                         assert.deepStrictEqual(payload.proposer_address, expected_data.proposer_address);
                         assert.deepStrictEqual(payload.proposal_fee_address, expected_data.proposal_fee_address);
 
-                        let vote_cost = sdk.JSBI.divide(expected_data.vote_fee, sdk.JSBI.BigInt(validators.length));
+                        const vote_cost = sdk.JSBI.divide(expected_data.vote_fee, sdk.JSBI.BigInt(validators.length));
                         // This verifies that the voting costs have been paid to all validators.
                         let sum_vote_cost = sdk.JSBI.BigInt(0);
                         validators.forEach((validator) => {
-                            let find_idx = tx.outputs.findIndex(
+                            const find_idx = tx.outputs.findIndex(
                                 (o) => new sdk.PublicKey(o.lock.bytes).toString() === validator
                             );
                             assert.ok(find_idx >= 0);
@@ -475,7 +478,7 @@ describe("Checking the proposal and ballot data", () => {
                 } else if (Buffer.compare(Buffer.from(sdk.BallotData.HEADER), header) === 0) {
                     // Exceptions should be handled in actual use.
                     assert.doesNotThrow(() => {
-                        let payload = sdk.BallotData.deserialize(SmartBuffer.fromBuffer(tx.payload));
+                        const payload = sdk.BallotData.deserialize(SmartBuffer.fromBuffer(tx.payload));
 
                         // This verifies the signature of the ballot.
                         assert.ok(payload.card.verify());
@@ -484,13 +487,13 @@ describe("Checking the proposal and ballot data", () => {
                         assert.deepStrictEqual(payload.app_name, expected_data.app_name);
                         assert.deepStrictEqual(payload.proposal_id, expected_data.proposal_id);
 
-                        let pre_image = new sdk.Hash(
+                        const pre_image = new sdk.Hash(
                             "0x0a8201f9f5096e1ce8e8de4147694940a57a188b78293a55144fc8777a774f2349b3a910fb1fb208514fb16deaf49eb05882cdb6796a81f913c6daac3eb74328"
                         );
-                        let app_name = "Votera";
-                        let proposal_id = payload.proposal_id;
-                        let key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
-                        let key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
+                        const app_name = "Votera";
+                        const proposal_id = payload.proposal_id;
+                        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+                        const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
                         assert.deepStrictEqual(
                             sdk.Encrypt.decrypt(payload.ballot, key_encrypt),
                             Buffer.from([sdk.BallotData.YES])

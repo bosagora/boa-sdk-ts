@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
@@ -27,7 +28,7 @@ describe("Hash", () => {
     // This was treated to be the same as D language.
     it("Test of reading and writing hex string", () => {
         // Read from hex string
-        let h = new sdk.Hash(
+        const h = new sdk.Hash(
             "0x5d7f6a7a30f7ff591c8649f61eb8a35d034824ed5cd252c2c6f10cdbd2236713dc369ef2a44b62ba113814a9d819a276ff61582874c9aee9c98efa2aa1f10d73"
         );
 
@@ -39,9 +40,9 @@ describe("Hash", () => {
     });
 
     // The test codes below compare with the values calculated in Agora.
-    it('Test of hash("abc")', () => {
+    it("Test of hash('abc')", () => {
         // Hash
-        let h = sdk.hash(Buffer.from("abc"));
+        const h = sdk.hash(Buffer.from("abc"));
 
         // Check
         assert.strictEqual(
@@ -53,13 +54,13 @@ describe("Hash", () => {
     // The test codes below compare with the values calculated in Agora.
     it("Test of multi hash", () => {
         // Source 1 : "foo"
-        let foo = sdk.hash(Buffer.from("foo"));
+        const foo = sdk.hash(Buffer.from("foo"));
 
         // Source 2 : "bar"
-        let bar = sdk.hash(Buffer.from("bar"));
+        const bar = sdk.hash(Buffer.from("bar"));
 
         // Hash Multi
-        let h = sdk.hashMulti(foo.data, bar.data);
+        const h = sdk.hashMulti(foo.data, bar.data);
 
         // Check
         assert.strictEqual(
@@ -68,10 +69,10 @@ describe("Hash", () => {
         );
 
         // Source 3 : "boa"
-        let boa = sdk.hash(Buffer.from("boa"));
+        const boa = sdk.hash(Buffer.from("boa"));
 
-        let h2 = sdk.hash(Buffer.concat([foo.data, bar.data, boa.data]));
-        let h3 = sdk.hashMulti(foo.data, bar.data, boa.data);
+        const h2 = sdk.hash(Buffer.concat([foo.data, bar.data, boa.data]));
+        const h3 = sdk.hashMulti(foo.data, bar.data, boa.data);
 
         // Check
         assert.strictEqual(h3.toString(), h2.toString());
@@ -79,10 +80,10 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test of utxo key, using makeUTXOKey", () => {
-        let tx_hash = new sdk.Hash(
+        const tx_hash = new sdk.Hash(
             "0x5d7f6a7a30f7ff591c8649f61eb8a35d034824ed5cd252c2c6f10cdbd2236713dc369ef2a44b62ba113814a9d819a276ff61582874c9aee9c98efa2aa1f10d73"
         );
-        let hash = sdk.makeUTXOKey(tx_hash, sdk.JSBI.BigInt(1));
+        const hash = sdk.makeUTXOKey(tx_hash, sdk.JSBI.BigInt(1));
         assert.strictEqual(
             hash.toString(),
             "0x7c95c29b184e47fbd32e58e5abd42c6e22e8bd5a7e934ab049d21df545e09c2e33bb2b89df2e59ee01eb2519b1508284b577f66a76d42546b65a6813e592bb84"
@@ -91,7 +92,7 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of transaction data", () => {
-        let payment_tx = new sdk.Transaction(
+        const payment_tx = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [new sdk.TxOutput(sdk.OutputType.Payment, "0", sdk.Lock.Null)],
             Buffer.alloc(0)
@@ -105,7 +106,7 @@ describe("Hash", () => {
         assert.ok(!payment_tx.isFreeze());
         assert.ok(!payment_tx.isCoinbase());
 
-        let nBytes =
+        const nBytes =
             sdk.Hash.Width + //  TxInput.utxo
             0 + //  TxInput.unlock.bytes
             sdk.Utils.SIZE_OF_INT + //  TxInput.unlock_age
@@ -117,7 +118,7 @@ describe("Hash", () => {
             sdk.Utils.SIZE_OF_LONG; //  Transaction.lock_height
         assert.strictEqual(payment_tx.getNumberOfBytes(), nBytes);
 
-        let freeze_tx = new sdk.Transaction(
+        const freeze_tx = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [new sdk.TxOutput(sdk.OutputType.Freeze, "0", sdk.Lock.Null)],
             Buffer.alloc(0)
@@ -134,7 +135,7 @@ describe("Hash", () => {
 
         assert.strictEqual(freeze_tx.getNumberOfBytes(), nBytes);
 
-        let payload_tx = new sdk.Transaction(
+        const payload_tx = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [new sdk.TxOutput(sdk.OutputType.Payment, "0", sdk.Lock.Null)],
             Buffer.from([1, 2, 3])
@@ -146,7 +147,7 @@ describe("Hash", () => {
     });
 
     it("Test for hash value of transaction with multi inputs", () => {
-        let tx1 = new sdk.Transaction(
+        const tx1 = new sdk.Transaction(
             [
                 new sdk.TxInput(
                     new sdk.Hash(
@@ -168,7 +169,7 @@ describe("Hash", () => {
                 "947d2a57020d45b79c8834e92eb04976b972ef542a589790fa593e33dc341f07b"
         );
 
-        let tx2 = new sdk.Transaction(
+        const tx2 = new sdk.Transaction(
             [
                 new sdk.TxInput(
                     new sdk.Hash(
@@ -191,7 +192,7 @@ describe("Hash", () => {
     });
 
     it("Test for hash value of transaction with multi outputs", () => {
-        let tx1 = new sdk.Transaction(
+        const tx1 = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [
                 new sdk.TxOutput(
@@ -216,7 +217,7 @@ describe("Hash", () => {
             "0x559613a7a8d5e15275312256ba3205333e038a23f07c4c2bd0ef193c16cac114bd72f02183731c51132e9ee9471a1ae9495a84f86837d8917792fee9db713877"
         );
 
-        let tx2 = new sdk.Transaction(
+        const tx2 = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [
                 new sdk.TxOutput(
@@ -243,7 +244,7 @@ describe("Hash", () => {
     });
 
     it("Test for hash value of transaction with multi outputs same address", () => {
-        let tx1 = new sdk.Transaction(
+        const tx1 = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [
                 new sdk.TxOutput(
@@ -268,7 +269,7 @@ describe("Hash", () => {
             "0xf7930aeb05490a1a3cf42bb87f1ef22685dde78bb3554c4f46da2c69f47d584cac620a3f4d482d605c7917918c18bf30b4b3a542efcaa16a22b5582022c6b2b7"
         );
 
-        let tx2 = new sdk.Transaction(
+        const tx2 = new sdk.Transaction(
             [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
             [
                 new sdk.TxOutput(
@@ -296,11 +297,11 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of BlockHeader", () => {
-        let pubkey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
+        const pubkey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
 
-        let tx = new sdk.Transaction([], [new sdk.TxOutput(sdk.OutputType.Payment, "100", pubkey)], Buffer.alloc(0));
+        const tx = new sdk.Transaction([], [new sdk.TxOutput(sdk.OutputType.Payment, "100", pubkey)], Buffer.alloc(0));
 
-        let header: sdk.BlockHeader = new sdk.BlockHeader(
+        const header: sdk.BlockHeader = new sdk.BlockHeader(
             new sdk.Hash(Buffer.alloc(sdk.Hash.Width)),
             new sdk.Height("0"),
             sdk.hashFull(tx),
@@ -319,11 +320,11 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of BlockHeader with missing validators", () => {
-        let pubkey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
+        const pubkey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
 
-        let tx = new sdk.Transaction([], [new sdk.TxOutput(sdk.OutputType.Payment, "100", pubkey)], Buffer.alloc(0));
+        const tx = new sdk.Transaction([], [new sdk.TxOutput(sdk.OutputType.Payment, "100", pubkey)], Buffer.alloc(0));
 
-        let header: sdk.BlockHeader = new sdk.BlockHeader(
+        const header: sdk.BlockHeader = new sdk.BlockHeader(
             new sdk.Hash(Buffer.alloc(sdk.Hash.Width)),
             new sdk.Height("0"),
             sdk.hashFull(tx),
@@ -342,7 +343,7 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of Scalar", () => {
-        let scalar = new sdk.Scalar("0x0e00a8df701806cb4deac9bb09cc85b097ee713e055b9d2bf1daf668b3f63778");
+        const scalar = new sdk.Scalar("0x0e00a8df701806cb4deac9bb09cc85b097ee713e055b9d2bf1daf668b3f63778");
         assert.deepStrictEqual(
             sdk.hashFull(scalar).toString(),
             "0x4f895cc641b2bfe4541f53b83445add00a7a81ad340312c51cbf15c53ddebcc7ea7dcd11a97e085d28552026952e7c7c8d4276d5901d33605a3ea21027a673d4"
@@ -351,7 +352,7 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of Point", () => {
-        let point = new sdk.Point("0xdb445140a72012a177535f43e6bbb8523ff21de465a7c35b42be1a447e5e2908");
+        const point = new sdk.Point("0xdb445140a72012a177535f43e6bbb8523ff21de465a7c35b42be1a447e5e2908");
         assert.deepStrictEqual(
             sdk.hashFull(point).toString(),
             "0xa0ad987cffcf2e3f96af64dd197d95d4e8e41be4448f6abebd8953b3c37b3132a1a1917c2046f6d3550cac70299110b28f23454d6124892ab2b8a6508f2bfe47"
@@ -360,7 +361,7 @@ describe("Hash", () => {
 
     // The test codes below compare with the values calculated in Agora.
     it("Test for hash value of PublicKey", () => {
-        let publicKey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
+        const publicKey = new sdk.PublicKey("boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg");
         assert.deepStrictEqual(
             sdk.hashFull(publicKey).toString(),
             "0x774d28bb3dc06a1418a4165109f4e8e4e05b4b283c798dd10aa70050a9b095408b3d1c6c1017b69912e94a4a58c5cb522e78b9741e1380bb5d2d705116f886ef"

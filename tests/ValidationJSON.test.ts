@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
@@ -134,7 +135,7 @@ describe("Test that JSON.stringify of Transaction", () => {
     });
 
     it("Test that JSON of Transaction", () => {
-        let tx = new sdk.Transaction(
+        const tx = new sdk.Transaction(
             [
                 new sdk.TxInput(
                     new sdk.Hash(

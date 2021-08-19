@@ -11,12 +11,15 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 import axios from "axios";
+// tslint:disable-next-line:no-implicit-dependencies
 import bodyParser from "body-parser";
+// tslint:disable-next-line:no-implicit-dependencies
 import express from "express";
 import * as http from "http";
 import URI from "urijs";
@@ -24,7 +27,7 @@ import URI from "urijs";
 /**
  * sample JSON
  */
-let sample_validators = [
+const sample_validators = [
     {
         address: "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0",
         enrolled_at: 0,
@@ -57,8 +60,8 @@ let sample_validators = [
 /**
  * Sample UTXOs
  */
-let sample_utxo_address = "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0";
-let sample_utxo = [
+const sample_utxo_address = "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0";
+const sample_utxo = [
     {
         utxo: "0x6d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0",
         type: 1,
@@ -163,7 +166,7 @@ let sample_utxo = [
     },
 ];
 
-let sample_tx = {
+const sample_tx = {
     inputs: [
         {
             utxo: "0xc0abcbff07879bfdb1495b8fdb9a9e5d2b07a689c7b9b3c583459082259be35687c125a1ddd6bd28b4fe8533ff794d3dba466b5f91117bbf557c3f1b6ff50e5f",
@@ -219,7 +222,7 @@ let sample_tx = {
     lock_height: "0",
 };
 
-let sample_txs_history = [
+const sample_txs_history = [
     {
         display_tx_type: "inbound",
         address: "boa1xrx66ezhd6uzx2s0plpgtwwmwmv4tfzvgp5sswqcg8z6m79s05pactt2yc9",
@@ -348,7 +351,7 @@ let sample_txs_history = [
     },
 ];
 
-let sample_tx_overview = {
+const sample_tx_overview = {
     height: "9",
     time: 1601553600,
     tx_hash:
@@ -374,7 +377,7 @@ let sample_tx_overview = {
     fee: "0",
 };
 
-let sample_txs_pending = [
+const sample_txs_pending = [
     {
         tx_hash:
             "0xcf8e55b51027342537ebbdfc503146033fcd8091054913e78d6a858125f892a24b0734afce7154fdde85688ab1700307b999b2e5a17a724990bb83d3785e89da",
@@ -393,7 +396,7 @@ let sample_txs_pending = [
     },
 ];
 
-let sample_spv = {
+const sample_spv = {
     result: true,
     message: "Success",
 };
@@ -424,7 +427,7 @@ export class TestStoa {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -443,10 +446,10 @@ export class TestStoa {
                 return;
             }
 
-            let enrolled_height: number = 0;
+            const enrolled_height: number = 0;
             if (Number.isNaN(height)) height = enrolled_height;
 
-            for (let elem of sample_validators) {
+            for (const elem of sample_validators) {
                 elem.preimage.height = (height - enrolled_height).toString();
             }
 
@@ -456,18 +459,18 @@ export class TestStoa {
         // http://localhost/validator
         this.app.get("/validator/:address", (req: express.Request, res: express.Response) => {
             let height: number = Number(req.query.height);
-            let address: string = String(req.params.address);
+            const address: string = String(req.params.address);
 
             if (!Number.isNaN(height) && (!Number.isInteger(height) || height < 0)) {
                 res.status(400).send("The Height value is not valid.");
                 return;
             }
 
-            let enrolled_height: number = 0;
+            const enrolled_height: number = 0;
             if (Number.isNaN(height)) height = enrolled_height;
 
-            for (let elem of sample_validators) {
-                if (elem.address == address) {
+            for (const elem of sample_validators) {
+                if (elem.address === address) {
                     elem.preimage.height = (height - enrolled_height).toString();
                     res.status(200).send(JSON.stringify([elem]));
                     return;
@@ -487,9 +490,9 @@ export class TestStoa {
 
         // http://localhost/utxo
         this.app.get("/utxo/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+            const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
-            if (sample_utxo_address == address.toString()) {
+            if (sample_utxo_address === address.toString()) {
                 res.status(200).send(JSON.stringify(sample_utxo));
                 return;
             }
@@ -504,25 +507,25 @@ export class TestStoa {
 
         // http://localhost/transaction/fees
         this.app.get("/transaction/fees/:tx_size", (req: express.Request, res: express.Response) => {
-            let size: string = req.params.tx_size.toString();
+            const size: string = req.params.tx_size.toString();
 
             if (!sdk.Utils.isPositiveInteger(size)) {
                 res.status(400).send(`Invalid value for parameter 'tx_size': ${size}`);
                 return;
             }
 
-            let tx_size = sdk.JSBI.BigInt(size);
-            let factor = sdk.JSBI.BigInt(200);
-            let minimum = sdk.JSBI.BigInt(100_000); // 0.01BOA
+            const tx_size = sdk.JSBI.BigInt(size);
+            const factor = sdk.JSBI.BigInt(200);
+            const minimum = sdk.JSBI.BigInt(100_000); // 0.01BOA
             let medium = sdk.JSBI.multiply(tx_size, factor);
             if (sdk.JSBI.lessThan(medium, minimum)) medium = sdk.JSBI.BigInt(minimum);
 
-            let width = sdk.JSBI.divide(medium, sdk.JSBI.BigInt(10));
-            let high = sdk.JSBI.add(medium, width);
+            const width = sdk.JSBI.divide(medium, sdk.JSBI.BigInt(10));
+            const high = sdk.JSBI.add(medium, width);
             let low = sdk.JSBI.subtract(medium, width);
             if (sdk.JSBI.lessThan(low, minimum)) low = sdk.JSBI.BigInt(minimum);
 
-            let data = {
+            const data = {
                 tx_size: sdk.JSBI.toNumber(tx_size),
                 high: high.toString(),
                 medium: medium.toString(),
@@ -533,8 +536,8 @@ export class TestStoa {
         });
 
         this.app.get("/wallet/transactions/history/:address", (req: express.Request, res: express.Response) => {
-            let address: string = String(req.params.address);
-            if (sdk.PublicKey.validate(address) != "") {
+            const address: string = String(req.params.address);
+            if (sdk.PublicKey.validate(address) !== "") {
                 res.status(400).send(`Invalid value for parameter 'address': ${address}`);
                 return;
             }
@@ -552,8 +555,8 @@ export class TestStoa {
         });
 
         this.app.get("/wallet/transactions/pending/:address", (req: express.Request, res: express.Response) => {
-            let address: string = String(req.params.address);
-            if (sdk.PublicKey.validate(address) != "") {
+            const address: string = String(req.params.address);
+            if (sdk.PublicKey.validate(address) !== "") {
                 res.status(400).send(`Invalid value for parameter 'address': ${address}`);
                 return;
             }
@@ -562,7 +565,7 @@ export class TestStoa {
 
         // http://localhost/transaction/pending
         this.app.get("/transaction/pending/:hash", (req: express.Request, res: express.Response) => {
-            let hash: string = String(req.params.hash);
+            const hash: string = String(req.params.hash);
 
             let tx_hash: sdk.Hash;
             try {
@@ -572,12 +575,12 @@ export class TestStoa {
                 return;
             }
 
-            let sample_tx_hash = new sdk.Hash(
+            const sample_tx_hash = new sdk.Hash(
                 "0x4c1d71415c9ec7b182438e8bb669e324dde9be93b9c223a2ca831689d2e9598" +
                     "c628d07c84d3ee0941e9f6fb597faf4fe92518fa35e577ba12125919c0501d4bd"
             );
 
-            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) != 0) {
+            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) !== 0) {
                 res.status(204).send(`No pending transactions. hash': (${hash})`);
             } else {
                 res.status(200).send(JSON.stringify(sample_tx));
@@ -586,7 +589,7 @@ export class TestStoa {
 
         // http://localhost/transaction
         this.app.get("/transaction/:hash", (req: express.Request, res: express.Response) => {
-            let hash: string = String(req.params.hash);
+            const hash: string = String(req.params.hash);
 
             let tx_hash: sdk.Hash;
             try {
@@ -596,12 +599,12 @@ export class TestStoa {
                 return;
             }
 
-            let sample_tx_hash = new sdk.Hash(
+            const sample_tx_hash = new sdk.Hash(
                 "0x4c1d71415c9ec7b182438e8bb669e324dde9be93b9c223a2ca831689d2e9598" +
                     "c628d07c84d3ee0941e9f6fb597faf4fe92518fa35e577ba12125919c0501d4bd"
             );
 
-            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) != 0) {
+            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) !== 0) {
                 res.status(204).send(`No pending transactions. hash': (${hash})`);
             } else {
                 res.status(200).send(JSON.stringify(sample_tx));
@@ -609,7 +612,7 @@ export class TestStoa {
         });
 
         this.app.get("/spv/:hash", (req: express.Request, res: express.Response) => {
-            let hash: string = String(req.params.hash);
+            const hash: string = String(req.params.hash);
 
             let tx_hash: sdk.Hash;
             try {
@@ -623,7 +626,7 @@ export class TestStoa {
         });
 
         this.app.post("/utxos", (req: express.Request, res: express.Response) => {
-            let result = [
+            const result = [
                 {
                     utxo: "0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673",
                     type: 0,
@@ -659,9 +662,9 @@ export class TestStoa {
 
         // http://localhost/balance
         this.app.get("/wallet/balance/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+            const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
-            if (sample_utxo_address == address.toString()) {
+            if (sample_utxo_address === address.toString()) {
                 res.status(200).send(
                     JSON.stringify({
                         address: sample_utxo_address,
@@ -679,7 +682,7 @@ export class TestStoa {
 
         // GET /wallet/utxo/:address
         this.app.get("/wallet/utxo/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+            const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
             let amount: sdk.JSBI;
             if (req.query.amount === undefined) {
@@ -719,10 +722,10 @@ export class TestStoa {
 
             let include = false;
             let sum = sdk.JSBI.BigInt(0);
-            let utxos: any[] = sample_utxo
+            const utxos: any[] = sample_utxo
                 .filter((m) => {
-                    if (balance_type == 0 && (m.type === 0 || m.type === 2)) return true;
-                    else return balance_type == 1 && m.type === 1;
+                    if (balance_type === 0 && (m.type === 0 || m.type === 2)) return true;
+                    else return balance_type === 1 && m.type === 1;
                 })
                 .filter((m) => {
                     if (last_utxo === undefined) return true;
@@ -753,7 +756,7 @@ export class TestStoa {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -787,7 +790,7 @@ class TestAgora {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -825,7 +828,7 @@ class TestAgora {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -837,8 +840,8 @@ class TestAgora {
 describe("BOA Client", () => {
     let stoa_server: TestStoa;
     let agora_server: TestAgora;
-    let stoa_port: string = "5000";
-    let agora_port: string = "2826";
+    const stoa_port: string = "5000";
+    const agora_port: string = "2826";
 
     before("Wait for the package libsodium to finish loading", async () => {
         sdk.SodiumHelper.assign(new BOASodium());
@@ -866,13 +869,13 @@ describe("BOA Client", () => {
     it("Test requests and responses to data using `LocalNetworkTest`", async () => {
         // Now we use axios, but in the future we will implement sdk, and test it.
         const client = axios.create();
-        let stoa_uri = URI("http://localhost")
+        const stoa_uri = URI("http://localhost")
             .port(stoa_port)
             .directory("validator")
             .filename("boa1xrp66va5qe84kyfhywhxz9luy7glpxu99n30cuv3mu0vkhcswuzajgak3pw")
             .setSearch("height", "10");
 
-        let response = await client.get(stoa_uri.toString());
+        const response = await client.get(stoa_uri.toString());
         assert.strictEqual(response.data.length, 1);
         assert.strictEqual(response.data[0].address, "boa1xrp66va5qe84kyfhywhxz9luy7glpxu99n30cuv3mu0vkhcswuzajgak3pw");
         assert.strictEqual(response.data[0].preimage.height, "10");
@@ -880,14 +883,14 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getAllValidators`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let validators = await boa_client.getAllValidators(10);
+        const validators = await boa_client.getAllValidators(10);
         assert.strictEqual(validators.length, 3);
         assert.strictEqual(validators[0].address, "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
         assert.strictEqual(validators[0].preimage.height, "10");
@@ -895,14 +898,14 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getAllValidator`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let validators = await boa_client.getValidator(
+        const validators = await boa_client.getValidator(
             "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0",
             10
         );
@@ -913,15 +916,15 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getUtxo`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
-        let utxos = await boa_client.getUTXOs(public_key);
+        const public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        const utxos = await boa_client.getUTXOs(public_key);
         assert.strictEqual(utxos.length, sample_utxo.length);
         assert.deepStrictEqual(utxos[0].utxo, new sdk.Hash(sample_utxo[0].utxo));
         assert.strictEqual(utxos[0].type, sample_utxo[0].type);
@@ -931,27 +934,27 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getBlockHeight`", async () => {
         // Set URL
-        let uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(uri.toString(), agora_uri.toString());
 
         // Query
-        let height = await boa_client.getBlockHeight();
+        const height = await boa_client.getBlockHeight();
         assert.deepStrictEqual(height, sdk.JSBI.BigInt(10));
     });
 
     it("Test a function of the BOA Client using async, await - `getAllValidators`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let validators = await boa_client.getAllValidators(10);
+        const validators = await boa_client.getAllValidators(10);
         assert.strictEqual(validators.length, 3);
         assert.strictEqual(validators[0].address, "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
         assert.strictEqual(validators[0].preimage.height, "10");
@@ -959,14 +962,14 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client using async, await - `getAllValidator`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let validators = await boa_client.getValidator(
+        const validators = await boa_client.getValidator(
             "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0",
             10
         );
@@ -977,14 +980,14 @@ describe("BOA Client", () => {
 
     it("When none of the data exists as a result of the inquiry.", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let validators = await boa_client.getValidator(
+        const validators = await boa_client.getValidator(
             "boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg",
             10
         );
@@ -993,11 +996,11 @@ describe("BOA Client", () => {
 
     it("When an error occurs with the wrong input parameter (height is -10).", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         await assert.rejects(
             boa_client.getValidator("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0", -10),
@@ -1011,11 +1014,11 @@ describe("BOA Client", () => {
 
     it("Can not connect to the server by entering the wrong URL", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port("6000");
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port("6000");
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         await assert.rejects(
             boa_client.getValidator("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0", 10),
@@ -1030,11 +1033,11 @@ describe("BOA Client", () => {
      */
     it("test for validity of pre-image", (doneIt: () => void) => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         let pre_images: sdk.Hash[] = [];
 
@@ -1044,8 +1047,8 @@ describe("BOA Client", () => {
         }
         pre_images = pre_images.reverse();
 
-        let original_image = pre_images[0];
-        let original_image_height = 1;
+        const original_image = pre_images[0];
+        const original_image_height = 1;
 
         // valid pre-image
         let new_image = pre_images[10];
@@ -1085,11 +1088,11 @@ describe("BOA Client", () => {
 
     it("test for getHeightAt", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
         let date = new Date(Date.UTC(2021, 3, 29, 0, 0, 0));
         let height = await boa_client.getHeightAt(date);
         assert.strictEqual(height, 16992);
@@ -1116,15 +1119,15 @@ describe("BOA Client", () => {
     it("Test client name and version", async () => {
         const version = require("../package.json").version;
 
-        let stoa_uri = URI("http://localhost").port(stoa_port).directory("client_info");
+        const stoa_uri = URI("http://localhost").port(stoa_port).directory("client_info");
 
-        let response = await sdk.Request.get(stoa_uri.toString());
+        const response = await sdk.Request.get(stoa_uri.toString());
         assert.strictEqual(response.data["X-Client-Name"], "boa-sdk-ts");
         assert.strictEqual(response.data["X-Client-Version"], version);
     });
 
     it("Test creating a vote data", () => {
-        let utxos = [
+        const utxos = [
             {
                 utxo: new sdk.Hash(
                     "0x4028965b7408566a66e4cf8c603a1cdebc7659a3e693d36d2fdcb39b196da967914f40ef4966d5b4b1f4b3aae00fbd68ffe8808b070464c2a101d44f4d7b0170"
@@ -1145,20 +1148,20 @@ describe("BOA Client", () => {
             },
         ];
 
-        let keys: Array<sdk.KeyPair> = [
+        const keys: sdk.KeyPair[] = [
             sdk.KeyPair.fromSeed(new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4")),
             sdk.KeyPair.fromSeed(new sdk.SecretKey("SCUCEYS4ZHJ2L6ME4Y37Q77KC3CQE42GLGAV6YDWP5NJVDC53HTQ4IIM")),
             sdk.KeyPair.fromSeed(new sdk.SecretKey("SDZQW3XBFXRXW2L7GVLS7DARGRKPQR5QIB5CDMGQ4KB24T46JURAAOLT")),
         ];
 
-        let builder = new sdk.TxBuilder(
+        const builder = new sdk.TxBuilder(
             sdk.KeyPair.fromSeed(new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4"))
         );
 
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let fee = sdk.TxPayloadFee.getFee(vote_data.length);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const fee = sdk.TxPayloadFee.getFee(vote_data.length);
 
-        let vote_tx = builder
+        const vote_tx = builder
             .addInput(utxos[0].utxo, utxos[0].amount, keys[0].secret)
             .addInput(utxos[1].utxo, utxos[1].amount, keys[1].secret)
             .addInput(utxos[2].utxo, utxos[2].amount, keys[2].secret)
@@ -1166,7 +1169,7 @@ describe("BOA Client", () => {
             .addOutput(new sdk.PublicKey(sdk.TxPayloadFee.CommonsBudgetAddress), fee)
             .sign(sdk.OutputType.Payment);
 
-        let expected_object = {
+        const expected_object = {
             inputs: [
                 {
                     utxo: "0x4028965b7408566a66e4cf8c603a1cdebc7659a3e693d36d2fdcb39b196da967914f40ef4966d5b4b1f4b3aae00fbd68ffe8808b070464c2a101d44f4d7b0170",
@@ -1215,7 +1218,7 @@ describe("BOA Client", () => {
         // Because randomly generated values are used when signing,
         // different signatures are created even when signed using the same secret key.
         // Therefore, omit the signature comparison.
-        vote_tx.inputs.forEach((value, idx) => {
+        vote_tx.inputs.forEach((value: sdk.TxInput, idx: number) => {
             expected_object.inputs[idx].unlock = value.unlock.toJSON();
         });
 
@@ -1230,62 +1233,62 @@ describe("BOA Client", () => {
 
     it("Test saving a vote data", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let utxo = {
+        const utxo = {
             utxo: new sdk.Hash(
                 "0x81a326afa790003c32517a2a2556613004e6147edac28d576cf7bcc2daadf4bb60be1f644c229b775e7894844ec66b2d70ddf407b8196b46bc1dfe42061c7497"
             ),
             amount: sdk.JSBI.BigInt(100000000),
         };
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let fee = sdk.TxPayloadFee.getFee(vote_data.length);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const fee = sdk.TxPayloadFee.getFee(vote_data.length);
 
-        let builder = new sdk.TxBuilder(
+        const builder = new sdk.TxBuilder(
             sdk.KeyPair.fromSeed(new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4"))
         );
-        let tx = builder
+        const tx = builder
             .addInput(utxo.utxo, utxo.amount)
             .addOutput(new sdk.PublicKey(sdk.TxPayloadFee.CommonsBudgetAddress), fee)
             .assignPayload(vote_data)
             .sign(sdk.OutputType.Payment);
 
-        let res = await boa_client.sendTransaction(tx);
+        const res = await boa_client.sendTransaction(tx);
         assert.ok(res);
     });
 
     it("Test saving a vote data with `UTXOManager`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let key_pair = sdk.KeyPair.fromSeed(
+        const key_pair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4")
         );
-        let block_height = await boa_client.getBlockHeight();
-        let utxos = await boa_client.getUTXOs(key_pair.address);
+        const block_height = await boa_client.getBlockHeight();
+        const utxos = await boa_client.getUTXOs(key_pair.address);
 
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.TxPayloadFee.getFee(vote_data.length);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.TxPayloadFee.getFee(vote_data.length);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
-        let builder = new sdk.TxBuilder(key_pair);
+        const builder = new sdk.TxBuilder(key_pair);
 
         // Create UTXOManager
-        let utxo_manager = new sdk.UTXOManager(utxos);
+        const utxo_manager = new sdk.UTXOManager(utxos);
         // Get UTXO for the amount to need.
         utxo_manager
             .getUTXO(sdk.JSBI.add(sdk.JSBI.add(payload_fee, tx_fee), sdk.JSBI.BigInt(1)), block_height)
             .forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -1315,7 +1318,7 @@ describe("BOA Client", () => {
             payload: "YXRhZCBldG92",
             lock_height: "0",
         };
-        let tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
+        const tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
 
         // Because randomly generated values are used when signing,
         // different signatures are created even when signed using the same secret key.
@@ -1326,32 +1329,32 @@ describe("BOA Client", () => {
 
         assert.strictEqual(JSON.stringify(tx), JSON.stringify(expected));
 
-        let res = await boa_client.sendTransaction(tx);
+        const res = await boa_client.sendTransaction(tx);
         assert.ok(res);
     });
 
     it("Test saving a vote data with `UTXOManager` - There is no output", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let key_pair = sdk.KeyPair.fromSeed(
+        const key_pair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4")
         );
-        let block_height = await boa_client.getBlockHeight();
-        let utxos = await boa_client.getUTXOs(key_pair.address);
+        const block_height = await boa_client.getBlockHeight();
+        const utxos = await boa_client.getUTXOs(key_pair.address);
 
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.JSBI.BigInt(200000);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.JSBI.BigInt(200000);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
-        let builder = new sdk.TxBuilder(key_pair);
+        const builder = new sdk.TxBuilder(key_pair);
 
         // Create UTXOManager
-        let utxo_manager = new sdk.UTXOManager(utxos);
+        const utxo_manager = new sdk.UTXOManager(utxos);
         // Get UTXO for the amount to need.
         // There can't be any output. An error occurs because the constraint of
         // the transaction is not satisfied that it must have at least one output.
@@ -1360,41 +1363,41 @@ describe("BOA Client", () => {
             .forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
 
         assert.throws(() => {
-            let tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
+            const tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
         });
     });
 
     it("Test saving a vote data - There is at least one output", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let key_pair = sdk.KeyPair.fromSeed(
+        const key_pair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4")
         );
-        let block_height = await boa_client.getBlockHeight();
-        let utxos = await boa_client.getUTXOs(key_pair.address);
+        const block_height = await boa_client.getBlockHeight();
+        const utxos = await boa_client.getUTXOs(key_pair.address);
 
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.JSBI.BigInt(200000);
-        let tx_fee = sdk.JSBI.BigInt(0);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.JSBI.BigInt(200000);
+        const tx_fee = sdk.JSBI.BigInt(0);
 
-        let builder = new sdk.TxBuilder(key_pair);
+        const builder = new sdk.TxBuilder(key_pair);
 
         // Create UTXOManager
-        let utxo_manager = new sdk.UTXOManager(utxos);
+        const utxo_manager = new sdk.UTXOManager(utxos);
         // Get UTXO for the amount to need.
         // The amount of the UTXO found is one greater than the fee, allowing at least one change output.
         utxo_manager
             .getUTXO(sdk.JSBI.add(sdk.JSBI.add(payload_fee, tx_fee), sdk.JSBI.BigInt(1)), block_height)
             .forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
 
-        let tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
+        const tx = builder.assignPayload(vote_data).sign(sdk.OutputType.Payment, tx_fee, payload_fee);
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -1426,17 +1429,17 @@ describe("BOA Client", () => {
 
         assert.strictEqual(JSON.stringify(tx), JSON.stringify(expected));
 
-        let res = await boa_client.sendTransaction(tx);
+        const res = await boa_client.sendTransaction(tx);
         assert.ok(res);
     });
 
     it("Test calculating fees of the transaction", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
         let fees = await boa_client.getTransactionFee(0);
         assert.strictEqual(fees.medium, "100000");
         assert.strictEqual(fees.low, "100000");
@@ -1460,37 +1463,37 @@ describe("BOA Client", () => {
 
     it("Test applying accurate transaction fee", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let key_pair = sdk.KeyPair.fromSeed(
+        const key_pair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4")
         );
-        let block_height = await boa_client.getBlockHeight();
-        let utxos = await boa_client.getUTXOs(key_pair.address);
+        const block_height = await boa_client.getBlockHeight();
+        const utxos = await boa_client.getUTXOs(key_pair.address);
 
-        let vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        let payload_fee = sdk.TxPayloadFee.getFee(vote_data.length);
+        const vote_data = Buffer.from("YXRhZCBldG92", "base64");
+        const payload_fee = sdk.TxPayloadFee.getFee(vote_data.length);
 
-        let builder = new sdk.TxBuilder(key_pair);
+        const builder = new sdk.TxBuilder(key_pair);
 
         // Create UTXOManager
-        let utxo_manager = new sdk.UTXOManager(utxos);
+        const utxo_manager = new sdk.UTXOManager(utxos);
 
-        let output_address = "boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg";
-        let output_count = 2;
+        const output_address = "boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg";
+        const output_count = 2;
         let estimated_tx_fee = sdk.JSBI.BigInt(
             sdk.Utils.FEE_FACTOR * sdk.Transaction.getEstimatedNumberOfBytes(0, output_count, vote_data.length)
         );
 
-        let send_boa = sdk.JSBI.BigInt(200000);
+        const send_boa = sdk.JSBI.BigInt(200000);
         let total_fee = sdk.JSBI.add(payload_fee, estimated_tx_fee);
         let total_send_amount = sdk.JSBI.add(total_fee, send_boa);
 
-        let in_utxos = utxo_manager.getUTXO(
+        const in_utxos = utxo_manager.getUTXO(
             total_send_amount,
             block_height,
             sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * sdk.TxInput.getEstimatedNumberOfBytes())
@@ -1516,7 +1519,7 @@ describe("BOA Client", () => {
         // Select medium
         let tx_fee = sdk.JSBI.BigInt(fees.medium);
 
-        let sum_amount_utxo = in_utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
+        const sum_amount_utxo = in_utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
         total_fee = sdk.JSBI.add(payload_fee, tx_fee);
         total_send_amount = sdk.JSBI.add(total_fee, send_boa);
 
@@ -1558,7 +1561,7 @@ describe("BOA Client", () => {
             .assignPayload(vote_data)
             .sign(sdk.OutputType.Payment, tx_fee, payload_fee);
 
-        let expected = {
+        const expected = {
             inputs: [
                 {
                     utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
@@ -1614,106 +1617,106 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getWalletTransactionsHistory`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrx66ezhd6uzx2s0plpgtwwmwmv4tfzvgp5sswqcg8z6m79s05pactt2yc9");
-        let data = await boa_client.getWalletTransactionsHistory(public_key, 10, 1, ["payment", "freeze"]);
+        const public_key = new sdk.PublicKey("boa1xrx66ezhd6uzx2s0plpgtwwmwmv4tfzvgp5sswqcg8z6m79s05pactt2yc9");
+        const data = await boa_client.getWalletTransactionsHistory(public_key, 10, 1, ["payment", "freeze"]);
         assert.deepStrictEqual(data, sample_txs_history);
     });
 
     it("Test a function of the BOA Client - `getWalletTransactionOverview`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let tx_hash = new sdk.Hash(
+        const tx_hash = new sdk.Hash(
             "0xf3a013153900f6416af03efc855df3880e3927fff386b3635bf46cd6e2c54769f88bd24128b6b935ab95af803cc41412fe9079b4ed7684538d86840115838814"
         );
-        let data = await boa_client.getWalletTransactionOverview(tx_hash);
+        const data = await boa_client.getWalletTransactionOverview(tx_hash);
         assert.deepStrictEqual(data, sample_tx_overview);
     });
 
     it("Test a function of the BOA Client - `getWalletTransactionsPending`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrzwvvw6l6d9k84ansqgs9yrtsetpv44wfn8zm9a7lehuej3ssskxth867s");
-        let data = await boa_client.getWalletTransactionsPending(public_key);
+        const public_key = new sdk.PublicKey("boa1xrzwvvw6l6d9k84ansqgs9yrtsetpv44wfn8zm9a7lehuej3ssskxth867s");
+        const data = await boa_client.getWalletTransactionsPending(public_key);
         assert.deepStrictEqual(data, sample_txs_pending);
     });
 
     it("Test a function of the BOA Client - `getPendingTransaction`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let tx_hash = new sdk.Hash(
+        const tx_hash = new sdk.Hash(
             "0x4c1d71415c9ec7b182438e8bb669e324dde9be93b9c223a2ca831689d2e9598c628d07c84d3ee0941e9f6fb597faf4fe92518fa35e577ba12125919c0501d4bd"
         );
-        let tx = await boa_client.getPendingTransaction(tx_hash);
+        const tx = await boa_client.getPendingTransaction(tx_hash);
         assert.deepStrictEqual(tx, sdk.Transaction.reviver("", sample_tx));
     });
 
     it("Test a function of the BOA Client - `getTransaction`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let tx_hash = new sdk.Hash(
+        const tx_hash = new sdk.Hash(
             "0x4c1d71415c9ec7b182438e8bb669e324dde9be93b9c223a2ca831689d2e9598c628d07c84d3ee0941e9f6fb597faf4fe92518fa35e577ba12125919c0501d4bd"
         );
-        let tx = await boa_client.getTransaction(tx_hash);
+        const tx = await boa_client.getTransaction(tx_hash);
         assert.deepStrictEqual(tx, sdk.Transaction.reviver("", sample_tx));
     });
 
     it("Get a voting fee", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Get Voting Fee
-        let fee = await boa_client.getVotingFee(273);
+        const fee = await boa_client.getVotingFee(273);
 
         assert.deepStrictEqual(fee, sdk.JSBI.BigInt(29310660));
     });
 
     it("Verify the payment", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let tx_hash = new sdk.Hash(
+        const tx_hash = new sdk.Hash(
             "0x4c1d71415c9ec7b182438e8bb669e324dde9be93b9c223a2ca831689d2e9598c628d07c84d3ee0941e9f6fb597faf4fe92518fa35e577ba12125919c0501d4bd"
         );
-        let status = await boa_client.verifyPayment(tx_hash);
+        const status = await boa_client.verifyPayment(tx_hash);
 
-        let expected = {
+        const expected = {
             result: true,
             message: "Success",
         };
@@ -1722,13 +1725,13 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getUTXOInfo`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
-        let utxo_hash = [
+        const utxo_hash = [
             new sdk.Hash(
                 "0x75283072696d82d8bca2fe45471906a26df1dbe0736e41a9f78e02a14e2bfced6e0cb671f023626f890f28204556aca217f3023c891fe64b9f4b3450cb3e80ad"
             ),
@@ -1739,24 +1742,24 @@ describe("BOA Client", () => {
                 "0x7fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673"
             ),
         ];
-        let utxos = await boa_client.getUTXOInfo(utxo_hash);
+        const utxos = await boa_client.getUTXOInfo(utxo_hash);
         assert.strictEqual(
             JSON.stringify(utxos),
-            '[{"utxo":"0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459200,"lock_type":0,"lock_bytes":"uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84="},{"utxo":"0x75283072696d82d8bca2fe45471906a26df1dbe0736e41a9f78e02a14e2bfced6e0cb671f023626f890f28204556aca217f3023c891fe64b9f4b3450cb3e80ad","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459800,"lock_type":0,"lock_bytes":"8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8="}]'
+            `[{"utxo":"0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459200,"lock_type":0,"lock_bytes":"uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84="},{"utxo":"0x75283072696d82d8bca2fe45471906a26df1dbe0736e41a9f78e02a14e2bfced6e0cb671f023626f890f28204556aca217f3023c891fe64b9f4b3450cb3e80ad","type":0,"unlock_height":[2],"amount":[-1662697472,4656],"height":[1],"time":1609459800,"lock_type":0,"lock_bytes":"8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8="}]`
         );
     });
 
     it("Test a function of the BOA Client - `getBalance`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
-        let balance = await boa_client.getBalance(public_key);
+        const public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        const balance = await boa_client.getBalance(public_key);
         assert.deepStrictEqual(balance.address, "boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
         assert.deepStrictEqual(balance.balance, sdk.JSBI.BigInt(2000000));
         assert.deepStrictEqual(balance.spendable, sdk.JSBI.BigInt(1800000));
@@ -1766,54 +1769,59 @@ describe("BOA Client", () => {
 
     it("Test a function of the BOA Client - `getWalletUTXO`", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        const public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
 
         // Request First UTXO
-        let first_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 0);
+        const first_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 0);
         assert.deepStrictEqual(first_utxos.length, 2);
         assert.deepStrictEqual(first_utxos[0].utxo.toString(), sample_utxo[1].utxo);
         assert.deepStrictEqual(first_utxos[1].utxo.toString(), sample_utxo[2].utxo);
 
         // Request Second UTXO
-        let second_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 0, first_utxos[1].utxo);
+        const second_utxos = await boa_client.getWalletUTXOs(
+            public_key,
+            sdk.JSBI.BigInt(300000),
+            0,
+            first_utxos[1].utxo
+        );
         assert.deepStrictEqual(second_utxos.length, 2);
         assert.deepStrictEqual(second_utxos[0].utxo.toString(), sample_utxo[3].utxo);
         assert.deepStrictEqual(second_utxos[1].utxo.toString(), sample_utxo[4].utxo);
 
         // Request Frozen UTXO
-        let third_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 1);
+        const third_utxos = await boa_client.getWalletUTXOs(public_key, sdk.JSBI.BigInt(300000), 1);
         assert.deepStrictEqual(third_utxos.length, 1);
         assert.deepStrictEqual(third_utxos[0].utxo.toString(), sample_utxo[0].utxo);
     });
 
     it("Test the UTXOProvider", async () => {
         // Set URL
-        let stoa_uri = URI("http://localhost").port(stoa_port);
-        let agora_uri = URI("http://localhost").port(agora_port);
+        const stoa_uri = URI("http://localhost").port(stoa_port);
+        const agora_uri = URI("http://localhost").port(agora_port);
 
         // Create BOA Client
-        let boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
+        const boa_client = new sdk.BOAClient(stoa_uri.toString(), agora_uri.toString());
 
         // Query
-        let public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
+        const public_key = new sdk.PublicKey("boa1xrq66nug6wnen9sp5cm7xhfw03yea8e9x63ggay3v5dhe6d9jerqz50eld0");
 
-        let utxoProvider = new sdk.UTXOProvider(public_key, boa_client);
+        const utxoProvider = new sdk.UTXOProvider(public_key, boa_client);
         // Request First UTXO
-        let first_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
+        const first_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
         assert.deepStrictEqual(first_utxos.length, 3);
         assert.deepStrictEqual(first_utxos[0].utxo.toString(), sample_utxo[1].utxo);
         assert.deepStrictEqual(first_utxos[1].utxo.toString(), sample_utxo[2].utxo);
         assert.deepStrictEqual(first_utxos[2].utxo.toString(), sample_utxo[3].utxo);
 
         // Request Second UTXO
-        let second_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
+        const second_utxos = await utxoProvider.getUTXO(sdk.JSBI.BigInt(300000), sdk.JSBI.BigInt(100000));
         assert.deepStrictEqual(second_utxos.length, 3);
         assert.deepStrictEqual(second_utxos[0].utxo.toString(), sample_utxo[4].utxo);
         assert.deepStrictEqual(second_utxos[1].utxo.toString(), sample_utxo[5].utxo);

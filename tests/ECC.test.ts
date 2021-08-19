@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
@@ -24,7 +25,7 @@ describe("Test of ECC", () => {
 
     it("Test Scalar fromString / toString functions", () => {
         const s = "0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ec";
-        let scalar = new sdk.Scalar(s);
+        const scalar = new sdk.Scalar(s);
         assert.strictEqual(scalar.toString(false), s);
     });
 
@@ -42,15 +43,15 @@ describe("Test of ECC", () => {
     });
 
     it("Test of Scalar.fromHash", () => {
-        let message = "BOSAGORA for the win";
-        let c = sdk.Scalar.fromHash(sdk.hashFull(message)); // challenge
+        const message = "BOSAGORA for the win";
+        const c = sdk.Scalar.fromHash(sdk.hashFull(message)); // challenge
         assert.strictEqual(c.toString(false), "0x07c51164f99d03f143cfafdfb8638826b87f86c73b82180c33cfb11dbaba1df3");
     });
 
     it("Test of Scalar function", () => {
-        let s1: sdk.Scalar = sdk.Scalar.random();
-        let s2: sdk.Scalar = sdk.Scalar.random();
-        let s3: sdk.Scalar = sdk.Scalar.add(s1, s2);
+        const s1: sdk.Scalar = sdk.Scalar.random();
+        const s2: sdk.Scalar = sdk.Scalar.random();
+        const s3: sdk.Scalar = sdk.Scalar.add(s1, s2);
 
         assert.deepStrictEqual(sdk.Scalar.sub(s3, s1), s2);
         assert.deepStrictEqual(sdk.Scalar.sub(s3, s2), s1);
@@ -58,21 +59,21 @@ describe("Test of ECC", () => {
         assert.deepStrictEqual(s3.negate(), sdk.Scalar.sub(s1.negate(), s2));
         assert.deepStrictEqual(s3.negate(), sdk.Scalar.sub(s2.negate(), s1));
 
-        let Zero: sdk.Scalar = sdk.Scalar.add(s3, s3.negate());
+        const Zero: sdk.Scalar = sdk.Scalar.add(s3, s3.negate());
         assert.ok(Zero.isNull());
 
-        let One: sdk.Scalar = sdk.Scalar.add(s3, s3.complement());
+        const One: sdk.Scalar = sdk.Scalar.add(s3, s3.complement());
         assert.deepStrictEqual(sdk.Scalar.mul(One, One), One);
 
         assert.deepStrictEqual(sdk.Scalar.add(Zero, One), One);
         assert.deepStrictEqual(sdk.Scalar.add(One, Zero), One);
 
-        let G: sdk.Point = One.toPoint();
+        const G: sdk.Point = One.toPoint();
         assert.deepStrictEqual(sdk.Point.add(G, G), sdk.Scalar.add(One, One).toPoint());
 
-        let p1: sdk.Point = s1.toPoint();
-        let p2: sdk.Point = s2.toPoint();
-        let p3: sdk.Point = s3.toPoint();
+        const p1: sdk.Point = s1.toPoint();
+        const p2: sdk.Point = s2.toPoint();
+        const p3: sdk.Point = s3.toPoint();
 
         assert.deepStrictEqual(s1.toPoint(), p1);
         assert.deepStrictEqual(sdk.Point.sub(p3, p1), p2);
@@ -83,19 +84,19 @@ describe("Test of ECC", () => {
             sdk.Point.scalarMul(s3, p2)
         );
 
-        let pZero: sdk.Point = sdk.Point.Null;
+        const pZero: sdk.Point = sdk.Point.Null;
         assert.deepStrictEqual(sdk.Point.add(pZero, G), G);
         assert.deepStrictEqual(sdk.Point.add(G, pZero), G);
     });
 
     it("Test of Point.isValid() - valid", () => {
-        let valid = new sdk.Point("0xab4f6f6e85b8d0d38f5d5798a4bdc4dd444c8909c8a5389d3bb209a18610511b");
+        const valid = new sdk.Point("0xab4f6f6e85b8d0d38f5d5798a4bdc4dd444c8909c8a5389d3bb209a18610511b");
         assert.ok(valid.isValid());
 
-        let invalid = new sdk.Point("0xab4f6f6e85b8d0d38f5d5798a4bdc4dd444c8909c8a5389d3bb209a18610511c");
+        const invalid = new sdk.Point("0xab4f6f6e85b8d0d38f5d5798a4bdc4dd444c8909c8a5389d3bb209a18610511c");
         assert.ok(!invalid.isValid());
 
-        let invalid2: sdk.Point = sdk.Point.Null;
+        const invalid2: sdk.Point = sdk.Point.Null;
         assert.ok(!invalid2.isValid());
     });
 });

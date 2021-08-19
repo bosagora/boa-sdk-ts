@@ -9,10 +9,11 @@
     License:
         MIT License. See LICENSE for details.
 
- *******************************************************************************/
+*******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 import { SmartBuffer } from "smart-buffer";
@@ -24,16 +25,16 @@ describe("Vote Data", () => {
     });
 
     it("Test of ProposalFeeData", () => {
-        let original_data = new sdk.ProposalFeeData("Votera", "ID1234567890");
-        let bytes = new SmartBuffer();
+        const original_data = new sdk.ProposalFeeData("Votera", "ID1234567890");
+        const bytes = new SmartBuffer();
         original_data.serialize(bytes);
 
-        let deserialized_data = sdk.ProposalFeeData.deserialize(bytes);
+        const deserialized_data = sdk.ProposalFeeData.deserialize(bytes);
         assert.strictEqual(original_data.proposal_id, deserialized_data.proposal_id);
     });
 
     it("Test of ProposalData", () => {
-        let original_data = new sdk.ProposalData(
+        const original_data = new sdk.ProposalData(
             "Votera",
             sdk.ProposalType.Fund,
             "ID1234567890",
@@ -48,15 +49,15 @@ describe("Vote Data", () => {
             new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e"),
             new sdk.PublicKey("boa1xrzwvvw6l6d9k84ansqgs9yrtsetpv44wfn8zm9a7lehuej3ssskxth867s")
         );
-        let bytes = new SmartBuffer();
+        const bytes = new SmartBuffer();
         original_data.serialize(bytes);
 
-        let deserialized_data = sdk.ProposalData.deserialize(bytes);
+        const deserialized_data = sdk.ProposalData.deserialize(bytes);
         assert.deepStrictEqual(original_data, deserialized_data);
     });
 
     it("Test of VoteCard", () => {
-        let voter_card = new sdk.VoterCard(
+        const voter_card = new sdk.VoterCard(
             new sdk.PublicKey("boa1xrdwry6fpk7a57k4gwyj3mwnf59w808nygtuxsgdrpmv4p7ua2hqx78z5en"),
             new sdk.PublicKey("boa1xzp770sxuswddged6rskm8y5cvk0g9an9mkfkqjeake0mmg2pfypxw2ch2x"),
             "2021-07-14T00:21:50Z"
@@ -69,43 +70,43 @@ describe("Vote Data", () => {
 
     it("Test of Vote", () => {
         // The seed key of the validator
-        let seed = `SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4`;
+        const seed = `SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4`;
 
         // The KeyPair of the validator
-        let validator_key = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
+        const validator_key = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
 
         // The temporary KeyPair
-        let temporary_key = sdk.KeyPair.random();
+        const temporary_key = sdk.KeyPair.random();
 
-        let voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
+        const voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
         voter_card.signature = validator_key.secret.sign<sdk.VoterCard>(voter_card);
 
         assert.ok(voter_card.verify());
 
-        let bytes = new SmartBuffer();
+        const bytes = new SmartBuffer();
         voter_card.serialize(bytes);
-        let deserialized_voter_card = sdk.VoterCard.deserialize(bytes);
+        const deserialized_voter_card = sdk.VoterCard.deserialize(bytes);
         assert.deepStrictEqual(voter_card, deserialized_voter_card);
 
         //  This is sample
-        let ballot = Buffer.from("Yes  ");
-        let ballot_data = new sdk.BallotData("Votera", "ID1234567890", ballot, voter_card, 100);
+        const ballot = Buffer.from("Yes  ");
+        const ballot_data = new sdk.BallotData("Votera", "ID1234567890", ballot, voter_card, 100);
         ballot_data.signature = temporary_key.secret.sign<sdk.BallotData>(ballot_data);
 
         assert.ok(ballot_data.verify());
 
-        let ballot_bytes = new SmartBuffer();
+        const ballot_bytes = new SmartBuffer();
         ballot_data.serialize(ballot_bytes);
-        let deserialized_ballot_data = sdk.BallotData.deserialize(ballot_bytes);
+        const deserialized_ballot_data = sdk.BallotData.deserialize(ballot_bytes);
         assert.deepStrictEqual(ballot_data, deserialized_ballot_data);
     });
 
     it("Test of encryption key", () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let encryption_key = new sdk.EncryptionKey(
+        const encryption_key = new sdk.EncryptionKey(
             "Votera",
             new sdk.Height("100"),
             new sdk.Hash(
@@ -117,29 +118,29 @@ describe("Vote Data", () => {
         encryption_key.signature = keypair.secret.sign<sdk.EncryptionKey>(encryption_key);
         assert.ok(keypair.address.verify<sdk.EncryptionKey>(encryption_key.signature, encryption_key));
 
-        let signature_agora = new sdk.Signature(
+        const signature_agora = new sdk.Signature(
             "0x5f3445d7788815ecabd181d6cea1f4ab501f196e5375e1359e12975c1081c88605012fdaa85754202b9bb83c8bc27ba1c1657dd0dc316b78ebe04aaed1dab7f3"
         );
         assert.ok(keypair.address.verify<sdk.EncryptionKey>(signature_agora, encryption_key));
     });
 
     it("Test of encrypt and decrypt", () => {
-        let pre_image = new sdk.Hash(
+        const pre_image = new sdk.Hash(
             "0x0a8201f9f5096e1ce8e8de4147694940a57a188b78293a55144fc8777a774f2349b3a910fb1fb208514fb16deaf49eb05882cdb6796a81f913c6daac3eb74328"
         );
-        let app_name = "Votera";
-        let proposal_id = "ID1234567890";
-        let key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
-        let key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
+        const app_name = "Votera";
+        const proposal_id = "ID1234567890";
+        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
 
-        let message = Buffer.from([sdk.BallotData.YES]);
-        let cipher_message = sdk.Encrypt.encrypt(message, key_encrypt);
-        let decode_message = sdk.Encrypt.decrypt(cipher_message, key_encrypt);
+        const message = Buffer.from([sdk.BallotData.YES]);
+        const cipher_message = sdk.Encrypt.encrypt(message, key_encrypt);
+        const decode_message = sdk.Encrypt.decrypt(cipher_message, key_encrypt);
         assert.deepStrictEqual(message, decode_message);
 
-        let cipher_message1 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.YES]), key_encrypt);
-        let cipher_message2 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.NO]), key_encrypt);
-        let cipher_message3 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.BLANK]), key_encrypt);
+        const cipher_message1 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.YES]), key_encrypt);
+        const cipher_message2 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.NO]), key_encrypt);
+        const cipher_message3 = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.BLANK]), key_encrypt);
 
         assert.notDeepStrictEqual(cipher_message1, cipher_message2);
         assert.notDeepStrictEqual(cipher_message2, cipher_message3);
@@ -152,40 +153,40 @@ describe("Vote Data", () => {
 
     it("The size of BallotData", () => {
         // The seed key of the validator
-        let seed = `SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4`;
+        const seed = `SD4IEXJ6GWZ226ALTDDM72SYMHBTTJ6CHDPUNNTVZK4XSDHAM4BAQIC4`;
 
         // The KeyPair of the validator
-        let validator_key = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
+        const validator_key = sdk.KeyPair.fromSeed(new sdk.SecretKey(seed));
         // The temporary KeyPair
-        let temporary_key = sdk.KeyPair.random();
-        let voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
+        const temporary_key = sdk.KeyPair.random();
+        const voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
         voter_card.signature = validator_key.secret.sign<sdk.VoterCard>(voter_card);
 
         //  This is sample
-        let pre_image = new sdk.Hash(
+        const pre_image = new sdk.Hash(
             "0x0a8201f9f5096e1ce8e8de4147694940a57a188b78293a55144fc8777a774f2349b3a910fb1fb208514fb16deaf49eb05882cdb6796a81f913c6daac3eb74328"
         );
-        let app_name = "Votera";
-        let proposal_id = "ID1234567890";
-        let key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
-        let key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
-        let ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.BLANK]), key_encrypt);
-        let ballot_data = new sdk.BallotData(app_name, proposal_id, ballot, voter_card, 100);
+        const app_name = "Votera";
+        const proposal_id = "ID1234567890";
+        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
+        const ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.BLANK]), key_encrypt);
+        const ballot_data = new sdk.BallotData(app_name, proposal_id, ballot, voter_card, 100);
         ballot_data.signature = temporary_key.secret.sign<sdk.BallotData>(ballot_data);
 
-        let ballot_bytes = new SmartBuffer();
+        const ballot_bytes = new SmartBuffer();
         ballot_data.serialize(ballot_bytes);
 
         assert.strictEqual(ballot_bytes.length, 285);
     });
 
     it("Test link data of ProposalFeeData", () => {
-        let data = new sdk.ProposalFeeData("Votera", "ID1234567890");
-        let proposal_address = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
-        let destination = new sdk.PublicKey("boa1xrgq6607dulyra5r9dw0ha6883va0jghdzk67er49h3ysm7k222ruhh7400");
-        let amount = sdk.JSBI.BigInt("10000000000000");
-        let link_data = data.getLinkData(proposal_address, destination, amount);
-        let expected = {
+        const data = new sdk.ProposalFeeData("Votera", "ID1234567890");
+        const proposal_address = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
+        const destination = new sdk.PublicKey("boa1xrgq6607dulyra5r9dw0ha6883va0jghdzk67er49h3ysm7k222ruhh7400");
+        const amount = sdk.JSBI.BigInt("10000000000000");
+        const link_data = data.getLinkData(proposal_address, destination, amount);
+        const expected = {
             proposer_address: "boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e",
             destination: "boa1xrgq6607dulyra5r9dw0ha6883va0jghdzk67er49h3ysm7k222ruhh7400",
             amount: "10000000000000",
@@ -195,7 +196,7 @@ describe("Vote Data", () => {
     });
 
     it("Test link data of ProposalData", () => {
-        let data = new sdk.ProposalData(
+        const data = new sdk.ProposalData(
             "Votera",
             sdk.ProposalType.Fund,
             "ID1234567890",
@@ -210,8 +211,8 @@ describe("Vote Data", () => {
             new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e"),
             new sdk.PublicKey("boa1xrzwvvw6l6d9k84ansqgs9yrtsetpv44wfn8zm9a7lehuej3ssskxth867s")
         );
-        let proposer_address = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
-        let validators = [
+        const proposer_address = new sdk.PublicKey("boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e");
+        const validators = [
             new sdk.PublicKey("boa1xrdwry6fpk7a57k4gwyj3mwnf59w808nygtuxsgdrpmv4p7ua2hqx78z5en"),
             new sdk.PublicKey("boa1xrdwrymw40ae7kdumk5uf24rf7wj6kxeem0t3mh9yclz6j46rnen6htq9ju"),
             new sdk.PublicKey("boa1xrdwryuhc2tw2j97wqe3ahh37qnjya59n5etz88n9fvwyyt9jyvrvfq5ecp"),
@@ -220,9 +221,9 @@ describe("Vote Data", () => {
             new sdk.PublicKey("boa1xrdwryl0ajdd86c45w4zrjf8spmrt7u4l7s5jy64ac3dc78x2ucd7wkakac"),
             new sdk.PublicKey("boa1xrgr66gdm5je646x70l5ar6qkhun0hg3yy2eh7tf8xxlmlt9fgjd2q0uj8p"),
         ];
-        let voting_fee = sdk.JSBI.BigInt("12000000");
-        let link_data = data.getLinkData(proposer_address, validators, voting_fee);
-        let expected = {
+        const voting_fee = sdk.JSBI.BigInt("12000000");
+        const link_data = data.getLinkData(proposer_address, validators, voting_fee);
+        const expected = {
             proposer_address: "boa1xrw66w303s5x05ej9uu6djc54kue29j72kah22xqqcrtqj57ztwm5uh524e",
             validators: [
                 "boa1xrdwry6fpk7a57k4gwyj3mwnf59w808nygtuxsgdrpmv4p7ua2hqx78z5en",
@@ -242,41 +243,41 @@ describe("Vote Data", () => {
 
     it("Test link data of Vote", () => {
         // The KeyPair of the validator
-        let validator_key = sdk.KeyPair.fromSeed(
+        const validator_key = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SDZQW3XBFXRXW2L7GVLS7DARGRKPQR5QIB5CDMGQ4KB24T46JURAAOLT")
         );
 
         // The temporary KeyPair
-        let temporary_key = sdk.KeyPair.fromSeed(
+        const temporary_key = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SANGEY2BIMFZ3K3T3NWSVYBS65N55SZE7WBEVVXQFLLZI6GLZBKACO6G")
         );
 
-        let voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
+        const voter_card = new sdk.VoterCard(validator_key.address, temporary_key.address, "2021-04-15T00:00:00Z");
         voter_card.signature = validator_key.secret.sign<sdk.VoterCard>(voter_card);
 
-        let pre_image = new sdk.Hash(
+        const pre_image = new sdk.Hash(
             "0x0a8201f9f5096e1ce8e8de4147694940a57a188b78293a55144fc8777a774f2349b3a910fb1fb208514fb16deaf49eb05882cdb6796a81f913c6daac3eb74328"
         );
-        let app_name = "Votera";
-        let proposal_id = "ID1234567890";
-        let key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
-        let key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
-        let ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.YES]), key_encrypt);
-        let ballot_data = new sdk.BallotData(app_name, "ID1234567890", ballot, voter_card, 100);
+        const app_name = "Votera";
+        const proposal_id = "ID1234567890";
+        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
+        const ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.YES]), key_encrypt);
+        const ballot_data = new sdk.BallotData(app_name, "ID1234567890", ballot, voter_card, 100);
         ballot_data.signature = temporary_key.secret.sign<sdk.BallotData>(ballot_data);
 
-        let link_data = ballot_data.getLinkData();
-        let expected = {
+        const link_data = ballot_data.getLinkData();
+        const expected = {
             payload:
                 "CEJBTExPVCAgBlZvdGVyYQxJRDEyMzQ1Njc4OTApGXLapWasRzV8O4JpIQmMI20eN2G7rwfkViiJUcxAVfQJgBObfZ7Nh9TFrSKdkwbnyCSISJw+l76oyJmY8Vncx0mYjWFV1big5setAqNd51Ay94fqSlwrBuOtBR0YA2VpyRX02J3If7S4FDIwMjEtMDQtMTVUMDA6MDA6MDBaqSfS45lGInLqc1rO5oZZwm31S+PYuS8j9mMut3XZugj0vt+z9XtUMY0FRA7ZaPonnSq6PZU1kASLlL/X076jaGTNZaxoxd1cmXYrMNM60T7atWboCmNjnMhfUdD9LxTDCLpfFGBSbkpL9pyd6EtQZ8N304PJbD7t6S9Fav5NBiII",
         };
 
-        let deserialized_ballot_data = sdk.BallotData.deserialize(
+        const deserialized_ballot_data = sdk.BallotData.deserialize(
             SmartBuffer.fromBuffer(Buffer.from(link_data.payload, "base64"))
         );
         assert.deepStrictEqual(ballot_data, deserialized_ballot_data);
 
-        let expected_ballot_data = sdk.BallotData.deserialize(
+        const expected_ballot_data = sdk.BallotData.deserialize(
             SmartBuffer.fromBuffer(Buffer.from(expected.payload, "base64"))
         );
         assert.deepStrictEqual(ballot_data.proposal_id, expected_ballot_data.proposal_id);

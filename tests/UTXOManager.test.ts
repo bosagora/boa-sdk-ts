@@ -11,14 +11,15 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
 describe("Test for UTXOManager", () => {
     let manager: sdk.UTXOManager;
-    let utxos: Array<sdk.UnspentTxOutput>;
+    let utxos: sdk.UnspentTxOutput[];
 
     before("Wait for the package libsodium to finish loading", () => {
         sdk.SodiumHelper.assign(new BOASodium());
@@ -122,13 +123,13 @@ describe("Test for UTXOManager", () => {
     });
 
     it("Tests not adding data with the same hash of UTXO", () => {
-        let test_manager = new sdk.UTXOManager([]);
+        const test_manager = new sdk.UTXOManager([]);
 
         test_manager.add([utxos[0]]);
-        let sum1 = test_manager.getSum();
+        const sum1 = test_manager.getSum();
 
         test_manager.add([utxos[0]]);
-        let sum2 = test_manager.getSum();
+        const sum2 = test_manager.getSum();
 
         assert.deepStrictEqual(sum1, [sdk.JSBI.BigInt(0), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(0)]);
         assert.deepStrictEqual(sum1, sum2);
@@ -144,15 +145,15 @@ describe("Test for UTXOManager", () => {
     });
 
     it("Obtain a UTXO to use - if there is enough money", () => {
-        let res = manager.getUTXO(sdk.JSBI.BigInt(15), sdk.JSBI.BigInt(5));
+        const res = manager.getUTXO(sdk.JSBI.BigInt(15), sdk.JSBI.BigInt(5));
         assert.deepStrictEqual(res, [utxos[1], utxos[2]]);
     });
 
     it("Obtain a UTXO to use - if there is not enough money", () => {
-        let sum = manager.getSum(sdk.JSBI.BigInt(10));
+        const sum = manager.getSum(sdk.JSBI.BigInt(10));
         assert.deepStrictEqual(sum, [sdk.JSBI.BigInt(70), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(0)]);
 
-        let res = manager.getUTXO(sdk.JSBI.add(sum[0], sdk.JSBI.BigInt(1)), sdk.JSBI.BigInt(10));
+        const res = manager.getUTXO(sdk.JSBI.add(sum[0], sdk.JSBI.BigInt(1)), sdk.JSBI.BigInt(10));
         assert.deepStrictEqual(res, []);
     });
 });

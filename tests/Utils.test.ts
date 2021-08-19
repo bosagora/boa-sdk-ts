@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 import { SmartBuffer } from "smart-buffer";
@@ -42,15 +43,15 @@ describe("Test of isInteger, isPositiveInteger, isNegativeInteger", () => {
 
 describe("Test for JSON serialization", () => {
     it("Test that `JSON.stringify` correctly picks up `Height.toJSON`", () => {
-        let height = new sdk.Height("45");
-        let json = JSON.stringify(height);
-        assert.strictEqual(json, '"45"');
+        const height = new sdk.Height("45");
+        const json = JSON.stringify(height);
+        assert.strictEqual(json, `"45"`);
     });
 
     it("Test that `Height.toJSON` works within an object", () => {
-        let height = new sdk.Height("45");
-        let json = JSON.stringify({ value: height });
-        assert.strictEqual(json, '{"value":"45"}');
+        const height = new sdk.Height("45");
+        const json = JSON.stringify({ value: height });
+        assert.strictEqual(json, `{"value":"45"}`);
     });
 });
 
@@ -61,9 +62,9 @@ describe("Test of Utils", () => {
     });
 
     it("Test of Utils.compareBuffer", () => {
-        let a = Buffer.from([6, 3, 2, 1]);
-        let b = Buffer.from([5, 4, 2, 1]);
-        let c = Buffer.from(b);
+        const a = Buffer.from([6, 3, 2, 1]);
+        const b = Buffer.from([5, 4, 2, 1]);
+        const c = Buffer.from(b);
 
         assert.strictEqual(sdk.Utils.writeToString(a), "0x01020306");
         assert.strictEqual(sdk.Utils.writeToString(b), "0x01020405");
@@ -72,11 +73,11 @@ describe("Test of Utils", () => {
         assert.ok(Buffer.compare(a, b) > 0);
         assert.ok(sdk.Utils.compareBuffer(a, b) < 0);
         assert.ok(sdk.Utils.compareBuffer(b, a) > 0);
-        assert.ok(sdk.Utils.compareBuffer(b, c) == 0);
-        assert.ok(sdk.Utils.compareBuffer(c, b) == 0);
+        assert.ok(sdk.Utils.compareBuffer(b, c) === 0);
+        assert.ok(sdk.Utils.compareBuffer(c, b) === 0);
 
-        let x = Buffer.from([5, 4, 3, 4, 1]);
-        let y = Buffer.from([6, 5, 4, 3, 4, 1]);
+        const x = Buffer.from([5, 4, 3, 4, 1]);
+        const y = Buffer.from([6, 5, 4, 3, 4, 1]);
         assert.ok(sdk.Utils.compareBuffer(x, y) < 0);
         assert.ok(sdk.Utils.compareBuffer(y, x) > 0);
     });
@@ -87,20 +88,20 @@ describe("Test of Utils", () => {
     });
 
     it("Test of BitMask JSON serialization", () => {
-        let validator = sdk.BitMask.fromString("01010101010101010");
+        const validator = sdk.BitMask.fromString("01010101010101010");
         assert.strictEqual(JSON.stringify(validator), `"01010101010101010"`);
     });
 
     it("Test of writeJSBigIntLE, readJSBigIntLE", () => {
-        let buffer = Buffer.allocUnsafe(8);
-        let original = sdk.JSBI.BigInt("9007199254740992");
+        const buffer = Buffer.allocUnsafe(8);
+        const original = sdk.JSBI.BigInt("9007199254740992");
         sdk.Utils.writeJSBigIntLE(buffer, original);
-        let value = sdk.Utils.readJSBigIntLE(buffer);
+        const value = sdk.Utils.readJSBigIntLE(buffer);
         assert.deepStrictEqual(value, original);
     });
 
     it("Test of readBuffer", () => {
-        let source = SmartBuffer.fromBuffer(Buffer.from("1234567890"));
+        const source = SmartBuffer.fromBuffer(Buffer.from("1234567890"));
         let result = sdk.Utils.readBuffer(source, 10);
         assert.deepStrictEqual(source.toBuffer(), result);
 
@@ -111,7 +112,7 @@ describe("Test of Utils", () => {
     });
 
     it("Test of VarInt serialization", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         sdk.VarInt.fromNumber(0, buffer);
         assert.deepStrictEqual(buffer.toBuffer(), Buffer.from([0]));
 
@@ -172,7 +173,7 @@ describe("Test of Utils", () => {
         assert.deepStrictEqual(buffer.toBuffer(), Buffer.from([0xff, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00]));
 
         buffer.clear();
-        let unsigned_log_max = sdk.JSBI.add(
+        const unsigned_log_max = sdk.JSBI.add(
             sdk.JSBI.leftShift(sdk.JSBI.BigInt(0xffffffff), sdk.JSBI.BigInt(32)),
             sdk.JSBI.BigInt(0xffffffff)
         );
@@ -181,7 +182,7 @@ describe("Test of Utils", () => {
     });
 
     it("Test of VarInt deserialization", () => {
-        let buffer = new SmartBuffer();
+        const buffer = new SmartBuffer();
         buffer.writeBuffer(Buffer.from([]));
         assert.throws(() => {
             sdk.VarInt.toNumber(buffer);
@@ -284,7 +285,7 @@ describe("Test of Utils", () => {
         assert.deepStrictEqual(sdk.VarInt.toJSBI(buffer), sdk.JSBI.BigInt(0x100000000));
 
         buffer.clear();
-        let unsigned_log_max = sdk.JSBI.add(
+        const unsigned_log_max = sdk.JSBI.add(
             sdk.JSBI.leftShift(sdk.JSBI.BigInt(0xffffffff), sdk.JSBI.BigInt(32)),
             sdk.JSBI.BigInt(0xffffffff)
         );
@@ -323,13 +324,13 @@ describe("Test of Utils", () => {
         array = sdk.iota(5).map((value: number) => value * 2);
         assert.deepStrictEqual(array, [0, 2, 4, 6, 8]);
 
-        let sum = sdk.iota(5).reduce<number>((sum: number, value: number) => {
-            return sum + value;
+        const sum = sdk.iota(5).reduce<number>((prev: number, value: number) => {
+            return prev + value;
         }, 0);
         assert.deepStrictEqual(sum, 10);
 
-        let str = sdk.iota(5).reduce<string>((sum: string, value: number) => {
-            return sum + value.toString();
+        const str = sdk.iota(5).reduce<string>((prev: string, value: number) => {
+            return prev + value.toString();
         }, "");
         assert.deepStrictEqual(str, "01234");
     });

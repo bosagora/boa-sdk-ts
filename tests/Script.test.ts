@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
 
@@ -23,13 +24,13 @@ describe("Test Script", () => {
     });
 
     it("Script.createOpcodes", () => {
-        let OneByte = (value: number): Buffer => {
+        const OneByte = (value: number): Buffer => {
             return Buffer.from([value]);
         };
 
-        let raw_script = [sdk.OP.DUP, sdk.OP.HASH, Buffer.alloc(64), sdk.OP.VERIFY_EQUAL, sdk.OP.CHECK_SIG];
-        let opcodes = sdk.Script.createOpcodes(raw_script);
-        let expected = Buffer.concat([
+        const raw_script = [sdk.OP.DUP, sdk.OP.HASH, Buffer.alloc(64), sdk.OP.VERIFY_EQUAL, sdk.OP.CHECK_SIG];
+        const opcodes = sdk.Script.createOpcodes(raw_script);
+        const expected = Buffer.concat([
             OneByte(sdk.OP.DUP),
             OneByte(sdk.OP.HASH),
             OneByte(64),
@@ -41,13 +42,13 @@ describe("Test Script", () => {
     });
 
     it("Script.validateScript", () => {
-        let StackMaxItemSize = 512;
+        const StackMaxItemSize = 512;
 
-        let OneByte = (value: number): Buffer => {
+        const OneByte = (value: number): Buffer => {
             return Buffer.from([value]);
         };
 
-        let TwoByte = (value: number): Buffer => {
+        const TwoByte = (value: number): Buffer => {
             return Buffer.from([value & 0x00ff, (value >> 8) & 0x00ff]);
         };
 
@@ -339,28 +340,28 @@ describe("Test Script", () => {
     });
 
     it("Create Lock and Unlock Script and validate scripts", () => {
-        let createLockP2PKH = (key_hash: sdk.Hash): Buffer => {
+        const createLockP2PKH = (value: sdk.Hash): Buffer => {
             return sdk.Script.createOpcodes([
                 sdk.OP.DUP,
                 sdk.OP.HASH,
-                key_hash.data,
+                value.data,
                 sdk.OP.VERIFY_EQUAL,
                 sdk.OP.CHECK_SIG,
             ]);
         };
 
-        let createUnlockP2PKH = (sig: sdk.Signature, pub_key: sdk.Point): Buffer => {
-            return sdk.Script.createOpcodes([sig.data, pub_key.data]);
+        const createUnlockP2PKH = (s: sdk.Signature, pub_key: sdk.Point): Buffer => {
+            return sdk.Script.createOpcodes([s.data, pub_key.data]);
         };
 
-        let kp: sdk.Pair = sdk.Pair.random();
-        let sig = sdk.Schnorr.signPair<string>(kp, "Hello world");
+        const kp: sdk.Pair = sdk.Pair.random();
+        const sig = sdk.Schnorr.signPair<string>(kp, "Hello world");
 
         // sanity checks
         const key_hash = sdk.hashFull(kp.V);
-        let lock_opcodes = createLockP2PKH(key_hash);
+        const lock_opcodes = createLockP2PKH(key_hash);
         assert.strictEqual(sdk.Script.validateScript(sdk.ScriptType.Lock, lock_opcodes, 512)[0], "");
-        let unlock_opcodes = createUnlockP2PKH(sig, kp.V);
+        const unlock_opcodes = createUnlockP2PKH(sig, kp.V);
         assert.strictEqual(sdk.Script.validateScript(sdk.ScriptType.Unlock, unlock_opcodes, 512)[0], "");
     });
 });

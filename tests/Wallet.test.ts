@@ -11,11 +11,14 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
 import * as assert from "assert";
+// tslint:disable-next-line:no-implicit-dependencies
 import bodyParser from "body-parser";
+// tslint:disable-next-line:no-implicit-dependencies
 import express from "express";
 import * as http from "http";
 
@@ -182,7 +185,7 @@ class TestStoa {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -204,7 +207,7 @@ class TestStoa {
 
         // http://localhost/balance
         this.app.get("/wallet/balance/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+            const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
             res.status(200).send(
                 JSON.stringify({
@@ -225,7 +228,7 @@ class TestStoa {
                 return;
             }
 
-            let utxos_hash: Array<sdk.Hash>;
+            let utxos_hash: sdk.Hash[];
             try {
                 utxos_hash = req.body.utxos.map((m: string) => new sdk.Hash(m));
             } catch (error) {
@@ -233,9 +236,9 @@ class TestStoa {
                 return;
             }
 
-            let utxo_array: any[] = [];
+            const utxo_array: any[] = [];
             utxos_hash.forEach((m) => {
-                let found = sample_utxo.find((n) => n.utxo === m.toString());
+                const found = sample_utxo.find((n) => n.utxo === m.toString());
                 if (found !== undefined) {
                     utxo_array.push(found);
                 }
@@ -246,7 +249,7 @@ class TestStoa {
 
         // http://localhost/utxo
         this.app.get("/wallet/utxo/:address", (req: express.Request, res: express.Response) => {
-            let address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
+            const address: sdk.PublicKey = new sdk.PublicKey(req.params.address);
 
             let amount: sdk.JSBI;
             if (req.query.amount === undefined) {
@@ -286,10 +289,10 @@ class TestStoa {
 
             let include = false;
             let sum = sdk.JSBI.BigInt(0);
-            let utxos: any[] = sample_utxo
+            const utxos: any[] = sample_utxo
                 .filter((m) => {
-                    if (balance_type == 0 && (m.type === 0 || m.type === 2)) return true;
-                    else return balance_type == 1 && m.type === 1;
+                    if (balance_type === 0 && (m.type === 0 || m.type === 2)) return true;
+                    else return balance_type === 1 && m.type === 1;
                 })
                 .filter((m) => {
                     if (last_utxo === undefined) return true;
@@ -307,25 +310,25 @@ class TestStoa {
 
         // http://localhost/transaction/fees
         this.app.get("/transaction/fees/:tx_size", (req: express.Request, res: express.Response) => {
-            let size: string = req.params.tx_size.toString();
+            const size: string = req.params.tx_size.toString();
 
             if (!sdk.Utils.isPositiveInteger(size)) {
                 res.status(400).send(`Invalid value for parameter 'tx_size': ${size}`);
                 return;
             }
 
-            let tx_size = sdk.JSBI.BigInt(size);
-            let factor = sdk.JSBI.BigInt(200);
-            let minimum = sdk.JSBI.BigInt(100_000); // 0.01BOA
+            const tx_size = sdk.JSBI.BigInt(size);
+            const factor = sdk.JSBI.BigInt(200);
+            const minimum = sdk.JSBI.BigInt(100_000); // 0.01BOA
             let medium = sdk.JSBI.multiply(tx_size, factor);
             if (sdk.JSBI.lessThan(medium, minimum)) medium = sdk.JSBI.BigInt(minimum);
 
-            let width = sdk.JSBI.divide(medium, sdk.JSBI.BigInt(10));
-            let high = sdk.JSBI.add(medium, width);
+            const width = sdk.JSBI.divide(medium, sdk.JSBI.BigInt(10));
+            const high = sdk.JSBI.add(medium, width);
             let low = sdk.JSBI.subtract(medium, width);
             if (sdk.JSBI.lessThan(low, minimum)) low = sdk.JSBI.BigInt(minimum);
 
-            let data = {
+            const data = {
                 tx_size: sdk.JSBI.toNumber(tx_size),
                 high: high.toString(),
                 medium: medium.toString(),
@@ -337,7 +340,7 @@ class TestStoa {
 
         // http://localhost/transaction/pending
         this.app.get("/transaction/pending/:hash", (req: express.Request, res: express.Response) => {
-            let hash: string = String(req.params.hash);
+            const hash: string = String(req.params.hash);
 
             let tx_hash: sdk.Hash;
             try {
@@ -347,7 +350,7 @@ class TestStoa {
                 return;
             }
 
-            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) != 0) {
+            if (Buffer.compare(tx_hash.data, sample_tx_hash.data) !== 0) {
                 res.status(204).send(`No pending transactions. hash': (${hash})`);
             } else {
                 res.status(200).send(JSON.stringify(sample_tx));
@@ -369,7 +372,7 @@ class TestStoa {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -403,7 +406,7 @@ class TestAgora {
      * @param port The bind port
      */
     constructor(port: number | string) {
-        if (typeof port == "string") this.port = parseInt(port, 10);
+        if (typeof port === "string") this.port = parseInt(port, 10);
         else this.port = port;
 
         this.app = express();
@@ -449,7 +452,7 @@ class TestAgora {
 
     public stop(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.server != null)
+            if (this.server !== null)
                 this.server.close((err?) => {
                     err === undefined ? resolve() : reject(err);
                 });
@@ -461,8 +464,8 @@ class TestAgora {
 describe("Wallet", () => {
     let stoa_server: TestStoa;
     let agora_server: TestAgora;
-    let stoa_port: string = "7000";
-    let agora_port: string = "6000";
+    const stoa_port: string = "7000";
+    const agora_port: string = "6000";
 
     before("Wait for the package libsodium to finish loading", async () => {
         sdk.SodiumHelper.assign(new BOASodium());
@@ -488,17 +491,17 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - getBalance", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.getBalance();
+        const res = await wallet.getBalance();
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
         assert.ok(res.balance !== undefined);
 
@@ -510,24 +513,24 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - transfer", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.transfer([
+        const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
                 amount: sdk.JSBI.BigInt(100000000),
             },
         ]);
 
-        let expected = {
+        const expected = {
             code: 0,
             message: "Success",
             tx: {
@@ -564,17 +567,17 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - transfer - Fail access to Agora", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6100",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.transfer([
+        const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
                 amount: sdk.JSBI.BigInt(100000000),
@@ -586,17 +589,17 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - transfer - Fail access to Stoa", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7100",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.transfer([
+        const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
                 amount: sdk.JSBI.BigInt(100000000),
@@ -608,17 +611,17 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - transfer - Not Enough Amount", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SDPVYLR53EAL2F4L3ACTBSZWVZU2WGAQFSABMMWC65M4GNXFQGMAQPAX")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.transfer([
+        const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
                 amount: sdk.JSBI.BigInt(100000000),
@@ -630,23 +633,23 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - cancel", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let tx = sdk.Transaction.reviver("", sample_tx);
+        const tx = sdk.Transaction.reviver("", sample_tx);
 
-        let res = await wallet.cancel(tx, (address: sdk.PublicKey[]) => {
+        const res = await wallet.cancel(tx, (address: sdk.PublicKey[]) => {
             return [keypair];
         });
 
-        let expected = {
+        const expected = {
             code: 0,
             message: "Success",
             tx: {
@@ -682,19 +685,19 @@ describe("Wallet", () => {
     });
 
     it("Test the Wallet - cancel with a transaction hash", async () => {
-        let keypair = sdk.KeyPair.fromSeed(
+        const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
         );
 
-        let wallet = new sdk.Wallet(keypair, {
+        const wallet = new sdk.Wallet(keypair, {
             agoraEndpoint: "http://localhost:6000",
             stoaEndpoint: "http://localhost:7000",
             fee: sdk.WalletFeeOption.Medium,
         });
 
-        let res = await wallet.cancelWithHash(sample_tx_hash);
+        const res = await wallet.cancelWithHash(sample_tx_hash);
 
-        let expected = {
+        const expected = {
             code: 0,
             message: "Success",
             tx: {

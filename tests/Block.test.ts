@@ -11,14 +11,15 @@
 
 *******************************************************************************/
 
-import * as sdk from "../lib";
+// tslint:disable-next-line:no-implicit-dependencies
 import { BOASodium } from "boa-sodium-ts";
+import * as sdk from "../lib";
 
-import fs from "fs";
 import * as assert from "assert";
+import fs from "fs";
 
-const samples: Array<any> = (() => {
-    let data: string = fs.readFileSync("tests/data/Blocks.sample3.json", "utf-8");
+const samples: any[] = (() => {
+    const data: string = fs.readFileSync("tests/data/Blocks.sample3.json", "utf-8");
     return JSON.parse(data);
 })();
 
@@ -29,7 +30,7 @@ describe("Test of Block", () => {
     });
 
     it("Test sample blocks", () => {
-        let blocks: Array<sdk.Block> = [];
+        let blocks: sdk.Block[] = [];
         blocks = samples.map((m) => sdk.Block.reviver("", m));
 
         assert.strictEqual(blocks.length, 3);
@@ -52,7 +53,7 @@ describe("Test of PreImageInfo", () => {
     };
 
     it("Test sample pre_image", () => {
-        let pre_image = sdk.PreImageInfo.reviver("", sample_data);
+        const pre_image = sdk.PreImageInfo.reviver("", sample_data);
 
         // Test for JSON serialization
         assert.deepStrictEqual(JSON.stringify(pre_image), JSON.stringify(sample_data));
