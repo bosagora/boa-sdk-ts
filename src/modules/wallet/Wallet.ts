@@ -51,6 +51,8 @@ export enum WalletResultCode {
     FailedRequestPendingTransaction,
     FailedRequestUTXO,
     FailedRequestTxFee,
+    FailedBuildTransaction,
+    NotExistReceiver,
     InvalidTransaction,
     CoinbaseCanNotCancel,
     UnsupportedUnfreezing,
@@ -78,7 +80,6 @@ export interface IWalletReceiver {
 export interface IWalletResult {
     code: WalletResultCode;
     message: string;
-    error?: any;
     data?: any;
 }
 
@@ -251,6 +252,8 @@ export class Wallet {
         receiver: IWalletReceiver[],
         payload?: Buffer
     ): Promise<IWalletResult> {
+        if (receiver.length === 0)
+            return { code: WalletResultCode.NotExistReceiver, message: "Not exists any receiver." };
         const check_res: IWalletResult = await this.checkServer();
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
@@ -279,17 +282,24 @@ export class Wallet {
             return { code: WalletResultCode.NotEnoughAmount, message: "Not enough amount." };
         }
 
-        utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
-        estimatedTxFee = JSBI.BigInt(
-            Utils.FEE_FACTOR * Transaction.getEstimatedNumberOfBytes(utxosToSpend.length, outputCount, payloadLength)
-        );
+        let tx: Transaction;
+        try {
+            utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
 
-        // Assign Payload
-        if (payload !== undefined) this.txBuilder.assignPayload(payload);
+            estimatedTxFee = JSBI.BigInt(
+                Utils.FEE_FACTOR *
+                    Transaction.getEstimatedNumberOfBytes(utxosToSpend.length, outputCount, payloadLength)
+            );
 
-        // Build a transaction
-        receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-        let tx = this.txBuilder.sign(output_type, estimatedTxFee, payloadFee);
+            // Assign Payload
+            if (payload !== undefined) this.txBuilder.assignPayload(payload);
+
+            // Build a transaction
+            receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
+            tx = this.txBuilder.sign(output_type, estimatedTxFee, payloadFee);
+        } catch (e) {
+            return { code: WalletResultCode.FailedBuildTransaction, message: e.message };
+        }
 
         // Get the size of the transaction
         let txSize = tx.getNumberOfBytes();
@@ -329,14 +339,18 @@ export class Wallet {
 
             // Add new UTXOs
             utxosToSpend.push(...moreUtxosToSpend);
-            utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
+            try {
+                utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
 
-            // Assign Payload
-            if (payload !== undefined) this.txBuilder.assignPayload(payload);
+                // Assign Payload
+                if (payload !== undefined) this.txBuilder.assignPayload(payload);
 
-            // Build a transaction
-            receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-            tx = this.txBuilder.sign(output_type, txFee, payloadFee);
+                // Build a transaction
+                receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
+                tx = this.txBuilder.sign(output_type, txFee, payloadFee);
+            } catch (e) {
+                return { code: WalletResultCode.FailedBuildTransaction, message: e.message };
+            }
 
             // Get the size of the transaction
             txSize = tx.getNumberOfBytes();
@@ -357,14 +371,18 @@ export class Wallet {
             totalSpendAmount = JSBI.add(JSBI.add(payloadFee, txFee), sendBOA);
         }
 
-        utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
+        try {
+            utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
 
-        // Assign Payload
-        if (payload !== undefined) this.txBuilder.assignPayload(payload);
+            // Assign Payload
+            if (payload !== undefined) this.txBuilder.assignPayload(payload);
 
-        // Build a transaction
-        receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
-        tx = this.txBuilder.sign(output_type, txFee, payloadFee);
+            // Build a transaction
+            receiver.forEach((m) => this.txBuilder.addOutput(m.address, m.amount));
+            tx = this.txBuilder.sign(output_type, txFee, payloadFee);
+        } catch (e) {
+            return { code: WalletResultCode.FailedBuildTransaction, message: e.message };
+        }
 
         try {
             await this.client.sendTransaction(tx);
@@ -443,37 +461,43 @@ export class Wallet {
             case TxCancelResultCode.UnsupportedUnfreezing:
                 return {
                     code: WalletResultCode.UnsupportedUnfreezing,
-                    message: "Unfreeze transactions cannot be canceled.",
+                    message: res.message,
                     data: res.tx,
                 };
             case TxCancelResultCode.InvalidTransaction:
                 return {
                     code: WalletResultCode.InvalidTransaction,
-                    message: "This transaction is invalid and cannot be canceled.",
+                    message: res.message,
                     data: res.tx,
                 };
             case TxCancelResultCode.NotFoundUTXO:
                 return {
                     code: WalletResultCode.NotFoundUTXO,
-                    message: "UTXO information not found.",
+                    message: res.message,
                     data: res.tx,
                 };
             case TxCancelResultCode.UnsupportedLockType:
                 return {
                     code: WalletResultCode.UnsupportedLockType,
-                    message: "This LockType not supported by cancel feature.",
+                    message: res.message,
                     data: res.tx,
                 };
             case TxCancelResultCode.NotFoundKey:
                 return {
                     code: WalletResultCode.NotFoundKey,
-                    message: "Secret key not found.",
+                    message: res.message,
                     data: res.tx,
                 };
             case TxCancelResultCode.NotEnoughFee:
                 return {
                     code: WalletResultCode.NotEnoughFee,
-                    message: "Not enough fees are needed to cancel.",
+                    message: res.message,
+                    data: res.tx,
+                };
+            case TxCancelResultCode.FailedBuildTransaction:
+                return {
+                    code: WalletResultCode.FailedBuildTransaction,
+                    message: res.message,
                     data: res.tx,
                 };
         }
@@ -577,10 +601,15 @@ export class Wallet {
         const txFee = this.getFee(fees);
         const amount: JSBI = JSBI.subtract(sumOfUTXO, txFee);
 
-        unspentTxOutputs.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
-
         // Build a transaction
-        const tx = this.txBuilder.addOutput(receiver, amount).sign(OutputType.Payment, txFee, payloadFee);
+        let tx: Transaction;
+        try {
+            unspentTxOutputs.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
+            this.txBuilder.addOutput(receiver, amount);
+            tx = this.txBuilder.sign(OutputType.Payment, txFee, payloadFee);
+        } catch (e) {
+            return { code: WalletResultCode.FailedBuildTransaction, message: e.message };
+        }
 
         try {
             await this.client.sendTransaction(tx);

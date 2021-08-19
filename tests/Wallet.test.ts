@@ -190,6 +190,23 @@ describe("Wallet", () => {
         assert.ok(res.data === undefined);
     });
 
+    it("Test the Wallet - transfer - Fail not exists any receiver", async () => {
+        const keypair = sdk.KeyPair.fromSeed(
+            new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")
+        );
+
+        const wallet = new sdk.Wallet(keypair, {
+            agoraEndpoint: "http://localhost:6000",
+            stoaEndpoint: "http://localhost:7000",
+            fee: sdk.WalletFeeOption.Medium,
+        });
+
+        const res = await wallet.transfer([]);
+
+        assert.deepStrictEqual(res.code, sdk.WalletResultCode.NotExistReceiver);
+        assert.ok(res.data === undefined);
+    });
+
     it("Test the Wallet - cancel", async () => {
         const keypair = sdk.KeyPair.fromSeed(
             new sdk.SecretKey("SAFRBTFVAB37EEJDIUGCDK5R3KSL3QDBO3SPS6GX752IILWB4NGQY7KJ")

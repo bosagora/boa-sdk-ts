@@ -74,23 +74,37 @@ export class TxCanceller {
     /**
      * Validate that the transaction is cancelable transaction.
      */
-    private validate(): TxCancelResultCode {
-        if (this.tx.inputs.length === 0) return TxCancelResultCode.InvalidTransaction;
+    private validate(): ITxCancelResult {
+        if (this.tx.inputs.length === 0)
+            return {
+                code: TxCancelResultCode.InvalidTransaction,
+                message: "This transaction is invalid and cannot be canceled.",
+            };
 
-        if (this.key_pairs.length === 0) return TxCancelResultCode.NotFoundKey;
+        if (this.key_pairs.length === 0)
+            return { code: TxCancelResultCode.NotFoundKey, message: "Secret key not found." };
 
         for (const input of this.tx.inputs) {
             const u = this.findUTXO(input.utxo);
-            if (u === undefined) return TxCancelResultCode.NotFoundUTXO;
+            if (u === undefined)
+                return { code: TxCancelResultCode.NotFoundUTXO, message: "UTXO information not found." };
 
-            if (u.lock_type !== LockType.Key) return TxCancelResultCode.UnsupportedLockType;
+            if (u.lock_type !== LockType.Key)
+                return {
+                    code: TxCancelResultCode.UnsupportedLockType,
+                    message: "This LockType not supported by cancel feature.",
+                };
 
             const pk = new PublicKey(Buffer.from(u.lock_bytes, "base64"));
             const found = this.findKey(pk);
-            if (found === undefined) return TxCancelResultCode.NotFoundKey;
+            if (found === undefined) return { code: TxCancelResultCode.NotFoundKey, message: "Secret key not found." };
 
             // Unfreezing transactions cannot be canceled.
-            if (u.type === OutputType.Freeze) return TxCancelResultCode.UnsupportedUnfreezing;
+            if (u.type === OutputType.Freeze)
+                return {
+                    code: TxCancelResultCode.UnsupportedUnfreezing,
+                    message: "Unfreeze transactions cannot be canceled.",
+                };
         }
 
         const amount_info = this.calculateAmount();
@@ -105,9 +119,9 @@ export class TxCanceller {
         // Fees for cancellation transactions can be set larger than existing fees.
         // Make sure it's big enough to work it out.
         if (JSBI.lessThan(amount_info.sum_input, JSBI.add(total_fee, JSBI.BigInt(this.tx.inputs.length))))
-            return TxCancelResultCode.NotEnoughFee;
+            return { code: TxCancelResultCode.NotEnoughFee, message: "Not enough fees are needed to cancel." };
 
-        return TxCancelResultCode.Success;
+        return { code: TxCancelResultCode.Success, message: "Success." };
     }
 
     /**
@@ -159,8 +173,8 @@ export class TxCanceller {
      * Otherwise, they have values based on the cause of the error.
      */
     public build(): ITxCancelResult {
-        const result_code = this.validate();
-        if (result_code !== TxCancelResultCode.Success) return { code: result_code };
+        const result_val = this.validate();
+        if (result_val.code !== TxCancelResultCode.Success) return result_val;
 
         const amount_info = this.calculateAmount();
         const new_adjusted_fee = this.getNewAdjustedFee(amount_info);
@@ -175,30 +189,39 @@ export class TxCanceller {
         const remain_fee = JSBI.subtract(total_fee, JSBI.multiply(divided_fee, JSBI.BigInt(in_length)));
 
         const builder = new TxBuilder(this.key_pairs[0]);
+        let new_tx;
+        try {
+            this.tx.inputs.forEach((input, idx) => {
+                const u = this.findUTXO(input.utxo);
+                if (u !== undefined) {
+                    const k = this.findKey(new PublicKey(Buffer.from(u.lock_bytes, "base64")));
+                    if (k !== undefined) {
+                        let amount = JSBI.subtract(u.amount, divided_fee);
+                        if (idx === in_length - 1) amount = JSBI.subtract(amount, remain_fee);
 
-        this.tx.inputs.forEach((input, idx) => {
-            const u = this.findUTXO(input.utxo);
-            if (u !== undefined) {
-                const k = this.findKey(new PublicKey(Buffer.from(u.lock_bytes, "base64")));
-                if (k !== undefined) {
-                    let amount = JSBI.subtract(u.amount, divided_fee);
-                    if (idx === in_length - 1) amount = JSBI.subtract(amount, remain_fee);
-
-                    builder.addInput(u.utxo, u.amount, k.secret);
-                    builder.addOutput(k.address, amount);
+                        builder.addInput(u.utxo, u.amount, k.secret);
+                        builder.addOutput(k.address, amount);
+                    }
                 }
-            }
-        });
-
-        return {
-            code: result_code,
-            tx: builder.sign(
+            });
+            new_tx = builder.sign(
                 OutputType.Payment,
                 tx_fee,
                 payload_fee,
                 this.tx.lock_height,
                 this.tx.inputs[0].unlock_age
-            ),
+            );
+        } catch (e) {
+            return {
+                code: TxCancelResultCode.FailedBuildTransaction,
+                message: e.message,
+            };
+        }
+
+        return {
+            code: TxCancelResultCode.Success,
+            message: "Success.",
+            tx: new_tx,
         };
     }
 
@@ -235,9 +258,11 @@ export enum TxCancelResultCode {
     UnsupportedLockType,
     NotFoundKey,
     NotEnoughFee,
+    FailedBuildTransaction,
 }
 
 export interface ITxCancelResult {
     code: TxCancelResultCode;
+    message: string;
     tx?: Transaction;
 }
