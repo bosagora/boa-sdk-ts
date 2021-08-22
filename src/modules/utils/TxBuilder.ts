@@ -11,7 +11,8 @@
 
 *******************************************************************************/
 
-import { Hash, hashFull } from "../common/Hash";
+import { Amount } from "../common/Amount";
+import { Hash } from "../common/Hash";
 import { Height } from "../common/Height";
 import { KeyPair, PublicKey, SecretKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
@@ -38,7 +39,7 @@ export class TxBuilder {
     /**
      * The sum of UTXO in `inputs`
      */
-    private amount: JSBI;
+    private amount: Amount;
 
     /**
      * The data payload in transaction to be created
@@ -59,7 +60,7 @@ export class TxBuilder {
         this.owner_keypair = owner_keypair;
         this.inputs = [];
         this.outputs = [];
-        this.amount = JSBI.BigInt(0);
+        this.amount = Amount.make(0);
     }
 
     /**
@@ -68,14 +69,15 @@ export class TxBuilder {
      * @param amount The value of UTXO to be spent
      * @param secret The key pair to spend UTXO.
      */
-    public addInput(utxo: Hash, amount: JSBI, secret?: SecretKey): TxBuilder {
-        if (JSBI.lessThanOrEqual(amount, JSBI.BigInt(0)))
+    public addInput(utxo: Hash, amount: Amount | JSBI, secret?: SecretKey): TxBuilder {
+        const utxo_amount = amount instanceof Amount ? amount : Amount.make(amount);
+        if (Amount.lessThanOrEqual(utxo_amount, Amount.ZERO_BOA))
             throw new Error(`Positive amount expected, not ${amount.toString()}`);
 
         if (secret === undefined) this.inputs.push(new RawInput(utxo, this.owner_keypair.secret));
         else this.inputs.push(new RawInput(utxo, secret));
 
-        this.amount = JSBI.add(this.amount, amount);
+        this.amount = Amount.add(this.amount, utxo_amount);
 
         return this;
     }
@@ -86,19 +88,20 @@ export class TxBuilder {
      * @param amount  The amount to be sent. If this is not set,
      * all remaining amounts of registered utxo will be set.
      */
-    public addOutput(lock: Lock | PublicKey, amount?: JSBI): TxBuilder {
+    public addOutput(lock: Lock | PublicKey, amount?: Amount | JSBI): TxBuilder {
         if (amount === undefined) amount = this.amount;
+        const output_amount = amount instanceof Amount ? amount : Amount.make(amount);
 
-        if (JSBI.lessThanOrEqual(amount, JSBI.BigInt(0)))
+        if (Amount.lessThanOrEqual(output_amount, Amount.ZERO_BOA))
             throw new Error(`Positive amount expected, not ${amount.toString()}`);
 
-        if (JSBI.greaterThan(amount, this.amount))
+        if (Amount.greaterThan(output_amount, this.amount))
             throw new Error(`Insufficient amount. ${amount.toString()}:${this.amount.toString()}`);
 
-        this.outputs.push(new TxOutput(OutputType.Payment, amount.toString(), lock));
+        this.outputs.push(new TxOutput(OutputType.Payment, output_amount, lock));
         this.outputs.sort(TxOutput.compare);
 
-        this.amount = JSBI.subtract(this.amount, amount);
+        this.amount = Amount.subtract(this.amount, output_amount);
 
         return this;
     }
@@ -126,8 +129,8 @@ export class TxBuilder {
      */
     public sign(
         type: OutputType = OutputType.Payment,
-        tx_fee: JSBI = JSBI.BigInt(0),
-        payload_fee: JSBI = JSBI.BigInt(0),
+        tx_fee: Amount | JSBI = Amount.make(0),
+        payload_fee: Amount | JSBI = Amount.make(0),
         lock_height: Height = new Height("0"),
         unlock_age: number = 0,
         unlocker?: (tx: Transaction, s: RawInput, idx: number) => Unlock
@@ -139,10 +142,12 @@ export class TxBuilder {
 
         for (const elem of this.outputs) elem.type = type;
 
-        const total_fee = JSBI.add(tx_fee, payload_fee);
-        if (JSBI.greaterThan(this.amount, total_fee))
-            this.addOutput(this.owner_keypair.address, JSBI.subtract(this.amount, total_fee));
-        else if (JSBI.lessThan(this.amount, total_fee)) throw new Error("There is not enough fee.");
+        const amount_tx_fee = tx_fee instanceof Amount ? tx_fee : Amount.make(tx_fee);
+        const amount_payload_fee = payload_fee instanceof Amount ? payload_fee : Amount.make(payload_fee);
+        const total_fee = Amount.add(amount_tx_fee, amount_payload_fee);
+        if (Amount.greaterThan(this.amount, total_fee))
+            this.addOutput(this.owner_keypair.address, Amount.subtract(this.amount, total_fee));
+        else if (Amount.lessThan(this.amount, total_fee)) throw new Error("There is not enough fee.");
 
         if (this.outputs.length === 0) throw new Error("No output for transaction.");
 
@@ -164,7 +169,7 @@ export class TxBuilder {
         this.payload = undefined;
         this.inputs = [];
         this.outputs = [];
-        this.amount = JSBI.BigInt(0);
+        this.amount = Amount.make(0);
 
         return tx;
     }

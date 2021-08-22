@@ -11,6 +11,8 @@
 
 *******************************************************************************/
 
+import { Amount } from "../common/Amount";
+
 import JSBI from "jsbi";
 
 /**
@@ -45,5 +47,13 @@ export class TxPayloadFee {
         return JSBI.BigInt(
             (Math.round((Math.exp(data_size / TxPayloadFee.TxPayloadFeeFactor) - 1.0) * decimal) * 10000000) / decimal
         );
+    }
+
+    /**
+     * Calculates the fee of data payloads
+     * @data_size The size of the data
+     */
+    public static getFeeAmount(data_size: number): Amount {
+        return Amount.make(TxPayloadFee.getFee(data_size));
     }
 }

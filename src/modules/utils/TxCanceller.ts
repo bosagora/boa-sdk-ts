@@ -11,6 +11,7 @@
 
 *******************************************************************************/
 
+import { Amount } from "../common/Amount";
 import { Hash } from "../common/Hash";
 import { KeyPair, PublicKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
@@ -19,8 +20,6 @@ import { UnspentTxOutput } from "../net/response/UnspentTxOutput";
 import { LockType } from "../script/Lock";
 import { TxBuilder } from "./TxBuilder";
 import { TxPayloadFee } from "./TxPayloadFee";
-
-import JSBI from "jsbi";
 
 /**
  * A class that creates a cancellation transaction.
@@ -114,11 +113,11 @@ export class TxCanceller {
             this.tx.inputs.length,
             this.tx.payload.length
         );
-        const total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
+        const total_fee = Amount.multiply(new_adjusted_fee, tx_size);
 
         // Fees for cancellation transactions can be set larger than existing fees.
         // Make sure it's big enough to work it out.
-        if (JSBI.lessThan(amount_info.sum_input, JSBI.add(total_fee, JSBI.BigInt(this.tx.inputs.length))))
+        if (Amount.lessThan(amount_info.sum_input, Amount.add(total_fee, Amount.make(this.tx.inputs.length))))
             return { code: TxCancelResultCode.NotEnoughFee, message: "Not enough fees are needed to cancel." };
 
         return { code: TxCancelResultCode.Success, message: "Success." };
@@ -128,19 +127,19 @@ export class TxCanceller {
      * Calculate the transaction fee.
      */
     private calculateAmount(): ITxAmountInfo {
-        let sum_in: JSBI = JSBI.BigInt(0);
-        let sum_out: JSBI = JSBI.BigInt(0);
+        let sum_in: Amount = Amount.make(0);
+        let sum_out: Amount = Amount.make(0);
 
         for (const input of this.tx.inputs) {
             const u = this.findUTXO(input.utxo);
-            if (u !== undefined) sum_in = JSBI.add(sum_in, u.amount);
+            if (u !== undefined) sum_in = Amount.add(sum_in, u.amount);
         }
 
-        for (const output of this.tx.outputs) sum_out = JSBI.add(sum_out, output.value);
+        for (const output of this.tx.outputs) sum_out = Amount.add(sum_out, output.value);
 
-        const total_fee = JSBI.subtract(sum_in, sum_out);
-        const payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
-        const tx_fee = JSBI.subtract(total_fee, payload_fee);
+        const total_fee = Amount.subtract(sum_in, sum_out);
+        const payload_fee = TxPayloadFee.getFeeAmount(this.tx.payload.length);
+        const tx_fee = Amount.subtract(total_fee, payload_fee);
         const tx_size = this.tx.getNumberOfBytes();
 
         return {
@@ -150,20 +149,17 @@ export class TxCanceller {
             payload_fee,
             tx_fee,
             tx_size,
-            adjusted_fee: JSBI.divide(total_fee, JSBI.BigInt(tx_size)),
+            adjusted_fee: Amount.divide(total_fee, tx_size),
         };
     }
 
     /**
      * Calculate the fees to be used in cancellation transactions.
      */
-    private getNewAdjustedFee(amount_info: ITxAmountInfo): JSBI {
-        return JSBI.divide(
-            JSBI.multiply(
-                amount_info.adjusted_fee,
-                JSBI.add(JSBI.BigInt(100), JSBI.BigInt(TxCanceller.double_spent_threshold_pct))
-            ),
-            JSBI.BigInt(100)
+    private getNewAdjustedFee(amount_info: ITxAmountInfo): Amount {
+        return Amount.divide(
+            Amount.multiply(amount_info.adjusted_fee, 100 + TxCanceller.double_spent_threshold_pct),
+            100
         );
     }
 
@@ -181,12 +177,12 @@ export class TxCanceller {
 
         const in_length = this.tx.inputs.length;
         const tx_size = Transaction.getEstimatedNumberOfBytes(in_length, in_length, this.tx.payload.length);
-        const total_fee = JSBI.multiply(new_adjusted_fee, JSBI.BigInt(tx_size));
-        const payload_fee = TxPayloadFee.getFee(this.tx.payload.length);
-        const tx_fee = JSBI.subtract(total_fee, payload_fee);
+        const total_fee = Amount.multiply(new_adjusted_fee, tx_size);
+        const payload_fee = TxPayloadFee.getFeeAmount(this.tx.payload.length);
+        const tx_fee = Amount.subtract(total_fee, payload_fee);
 
-        const divided_fee = JSBI.divide(total_fee, JSBI.BigInt(in_length));
-        const remain_fee = JSBI.subtract(total_fee, JSBI.multiply(divided_fee, JSBI.BigInt(in_length)));
+        const divided_fee = Amount.divide(total_fee, in_length);
+        const remain_fee = Amount.subtract(total_fee, Amount.multiply(divided_fee, in_length));
 
         const builder = new TxBuilder(this.key_pairs[0]);
         let new_tx;
@@ -196,8 +192,8 @@ export class TxCanceller {
                 if (u !== undefined) {
                     const k = this.findKey(new PublicKey(Buffer.from(u.lock_bytes, "base64")));
                     if (k !== undefined) {
-                        let amount = JSBI.subtract(u.amount, divided_fee);
-                        if (idx === in_length - 1) amount = JSBI.subtract(amount, remain_fee);
+                        let amount = Amount.subtract(u.amount, divided_fee);
+                        if (idx === in_length - 1) amount = Amount.subtract(amount, remain_fee);
 
                         builder.addInput(u.utxo, u.amount, k.secret);
                         builder.addOutput(k.address, amount);
@@ -241,13 +237,13 @@ export class TxCanceller {
 }
 
 interface ITxAmountInfo {
-    sum_input: JSBI;
-    sum_output: JSBI;
-    total_fee: JSBI;
-    payload_fee: JSBI;
-    tx_fee: JSBI;
+    sum_input: Amount;
+    sum_output: Amount;
+    total_fee: Amount;
+    payload_fee: Amount;
+    tx_fee: Amount;
     tx_size: number;
-    adjusted_fee: JSBI;
+    adjusted_fee: Amount;
 }
 
 export enum TxCancelResultCode {

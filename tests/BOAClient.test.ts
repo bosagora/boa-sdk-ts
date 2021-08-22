@@ -117,7 +117,7 @@ describe("BOA Client", () => {
         assert.deepStrictEqual(utxos[0].utxo, new sdk.Hash(sample_utxo_client[0].utxo));
         assert.strictEqual(utxos[0].type, sample_utxo_client[0].type);
         assert.deepStrictEqual(utxos[0].unlock_height, sdk.JSBI.BigInt(sample_utxo_client[0].unlock_height));
-        assert.deepStrictEqual(utxos[0].amount, sdk.JSBI.BigInt(sample_utxo_client[0].amount));
+        assert.deepStrictEqual(utxos[0].amount, sdk.Amount.make(sample_utxo_client[0].amount));
     });
 
     it("Test a function of the BOA Client - `getBlockHeight`", async () => {
@@ -664,7 +664,7 @@ describe("BOA Client", () => {
         const utxos = await boa_client.getUTXOs(key_pair.address);
 
         const vote_data = Buffer.from("YXRhZCBldG92", "base64");
-        const payload_fee = sdk.TxPayloadFee.getFee(vote_data.length);
+        const payload_fee = sdk.TxPayloadFee.getFeeAmount(vote_data.length);
 
         const builder = new sdk.TxBuilder(key_pair);
 
@@ -673,21 +673,21 @@ describe("BOA Client", () => {
 
         const output_address = "boa1xrr66q4rthn4qvhhsl4y5hptqm366pgarqpk26wfzh6d38wg076tsqqesgg";
         const output_count = 2;
-        let estimated_tx_fee = sdk.JSBI.BigInt(
+        let estimated_tx_fee = sdk.Amount.make(
             sdk.Utils.FEE_FACTOR * sdk.Transaction.getEstimatedNumberOfBytes(0, output_count, vote_data.length)
         );
 
-        const send_boa = sdk.JSBI.BigInt(200000);
-        let total_fee = sdk.JSBI.add(payload_fee, estimated_tx_fee);
-        let total_send_amount = sdk.JSBI.add(total_fee, send_boa);
+        const send_boa = sdk.Amount.make(200000);
+        let total_fee = sdk.Amount.add(payload_fee, estimated_tx_fee);
+        let total_send_amount = sdk.Amount.add(total_fee, send_boa);
 
         const in_utxos = utxo_manager.getUTXO(
             total_send_amount,
             block_height,
-            sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * sdk.TxInput.getEstimatedNumberOfBytes())
+            sdk.Amount.make(sdk.Utils.FEE_FACTOR * sdk.TxInput.getEstimatedNumberOfBytes())
         );
         in_utxos.forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
-        estimated_tx_fee = sdk.JSBI.BigInt(
+        estimated_tx_fee = sdk.Amount.make(
             sdk.Utils.FEE_FACTOR *
                 sdk.Transaction.getEstimatedNumberOfBytes(in_utxos.length, output_count, vote_data.length)
         );
@@ -705,24 +705,27 @@ describe("BOA Client", () => {
         let fees = await boa_client.getTransactionFee(tx_size);
 
         // Select medium
-        let tx_fee = sdk.JSBI.BigInt(fees.medium);
+        let tx_fee = sdk.Amount.make(fees.medium);
 
-        const sum_amount_utxo = in_utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
-        total_fee = sdk.JSBI.add(payload_fee, tx_fee);
-        total_send_amount = sdk.JSBI.add(total_fee, send_boa);
+        const sum_amount_utxo = in_utxos.reduce<sdk.Amount>(
+            (sum, n) => sdk.Amount.add(sum, n.amount),
+            sdk.Amount.make(0)
+        );
+        total_fee = sdk.Amount.add(payload_fee, tx_fee);
+        total_send_amount = sdk.Amount.add(total_fee, send_boa);
 
         // If the value of LockType in UTXO is not a 'LockType.Key', the size may vary. The code below is for that.
-        if (sdk.JSBI.lessThan(sum_amount_utxo, total_send_amount)) {
+        if (sdk.Amount.lessThan(sum_amount_utxo, total_send_amount)) {
             //  Add additional UTXO for the required amount.
             in_utxos.push(
                 ...utxo_manager.getUTXO(
-                    sdk.JSBI.subtract(total_send_amount, sum_amount_utxo),
+                    sdk.Amount.subtract(total_send_amount, sum_amount_utxo),
                     block_height,
-                    sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * sdk.TxInput.getEstimatedNumberOfBytes())
+                    sdk.Amount.make(sdk.Utils.FEE_FACTOR * sdk.TxInput.getEstimatedNumberOfBytes())
                 )
             );
             in_utxos.forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
-            estimated_tx_fee = sdk.JSBI.BigInt(
+            estimated_tx_fee = sdk.Amount.make(
                 sdk.Utils.FEE_FACTOR *
                     sdk.Transaction.getEstimatedNumberOfBytes(in_utxos.length, output_count, vote_data.length)
             );
@@ -740,7 +743,7 @@ describe("BOA Client", () => {
             fees = await boa_client.getTransactionFee(tx_size);
 
             // Select medium
-            tx_fee = sdk.JSBI.BigInt(fees.medium);
+            tx_fee = sdk.Amount.make(fees.medium);
         }
 
         in_utxos.forEach((u: sdk.UnspentTxOutput) => builder.addInput(u.utxo, u.amount));
@@ -927,7 +930,7 @@ describe("BOA Client", () => {
         const utxos = await boa_client.getUTXOInfo(utxo_hash);
         assert.strictEqual(
             JSON.stringify(utxos),
-            `[{"utxo":"0x6d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0","type":1,"unlock_height":[1],"amount":[200000],"height":[],"time":1577836800000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="},{"utxo":"0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85","type":0,"unlock_height":[2],"amount":[200000],"height":[1],"time":1577837400000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="},{"utxo":"0x7e1958dbe6839d8520d65013bbc85d36d47a9f64cf608cc66c0d816f0b45f5c8a85a8990725ffbb1ab13c3c65b45fdc06f4745d455e00e1068c4c5c0b661d685","type":0,"unlock_height":[4],"amount":[200000],"height":[3],"time":1577838600000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="}]`
+            `[{"utxo":"0x6d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0","type":1,"unlock_height":[1],"amount":"200000","height":[],"time":1577836800000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="},{"utxo":"0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85","type":0,"unlock_height":[2],"amount":"200000","height":[1],"time":1577837400000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="},{"utxo":"0x7e1958dbe6839d8520d65013bbc85d36d47a9f64cf608cc66c0d816f0b45f5c8a85a8990725ffbb1ab13c3c65b45fdc06f4745d455e00e1068c4c5c0b661d685","type":0,"unlock_height":[4],"amount":"200000","height":[3],"time":1577838600000,"lock_type":0,"lock_bytes":"wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE="}]`
         );
     });
 

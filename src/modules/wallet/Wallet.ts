@@ -11,6 +11,7 @@
 
 *******************************************************************************/
 
+import { Amount } from "../common/Amount";
 import { Hash } from "../common/Hash";
 import { KeyPair, PublicKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
@@ -71,7 +72,7 @@ export enum WalletResultCode {
  */
 export interface IWalletReceiver {
     address: PublicKey;
-    amount: JSBI;
+    amount: Amount;
 }
 
 /**
@@ -173,14 +174,14 @@ export class Wallet {
      * @param fees      Fees received from Stoa
      * @private
      */
-    private getFee(fees: TransactionFee): JSBI {
+    private getFee(fees: TransactionFee): Amount {
         switch (this.option.fee) {
             case WalletFeeOption.High:
-                return JSBI.BigInt(fees.high);
+                return Amount.make(fees.high);
             case WalletFeeOption.Low:
-                return JSBI.BigInt(fees.low);
+                return Amount.make(fees.low);
             default:
-                return JSBI.BigInt(fees.medium);
+                return Amount.make(fees.medium);
         }
     }
 
@@ -258,21 +259,21 @@ export class Wallet {
         if (check_res.code !== WalletResultCode.Success) return check_res;
 
         const payloadLength = payload === undefined ? 0 : payload.length;
-        const payloadFee = TxPayloadFee.getFee(payloadLength);
-        const sendBOA = receiver.reduce<JSBI>((sum, value) => JSBI.add(sum, value.amount), JSBI.BigInt(0));
+        const payloadFee = TxPayloadFee.getFeeAmount(payloadLength);
+        const sendBOA = receiver.reduce<Amount>((sum, value) => Amount.add(sum, value.amount), Amount.make(0));
         const outputCount = receiver.length + 1;
-        let estimatedTxFee = JSBI.BigInt(
+        let estimatedTxFee = Amount.make(
             Utils.FEE_FACTOR * Transaction.getEstimatedNumberOfBytes(0, outputCount, payloadLength)
         );
-        let totalFee = JSBI.add(payloadFee, estimatedTxFee);
-        let totalSpendAmount = JSBI.add(totalFee, sendBOA);
+        let totalFee = Amount.add(payloadFee, estimatedTxFee);
+        let totalSpendAmount = Amount.add(totalFee, sendBOA);
 
         // Extract the UTXO to be spent.
         let utxosToSpend: UnspentTxOutput[];
         try {
             utxosToSpend = await this.spendableUtxoProvider.getUTXO(
                 totalSpendAmount,
-                JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
+                Amount.make(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
             );
         } catch (e) {
             return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
@@ -286,7 +287,7 @@ export class Wallet {
         try {
             utxosToSpend.forEach((u: UnspentTxOutput) => this.txBuilder.addInput(u.utxo, u.amount));
 
-            estimatedTxFee = JSBI.BigInt(
+            estimatedTxFee = Amount.make(
                 Utils.FEE_FACTOR *
                     Transaction.getEstimatedNumberOfBytes(utxosToSpend.length, outputCount, payloadLength)
             );
@@ -314,18 +315,18 @@ export class Wallet {
 
         // Set the fee according to the option of the entered fee.
         let txFee = this.getFee(fees);
-        let sumAmountUtxo = utxosToSpend.reduce<JSBI>((sum, n) => JSBI.add(sum, n.amount), JSBI.BigInt(0));
-        totalFee = JSBI.add(payloadFee, txFee);
-        totalSpendAmount = JSBI.add(totalFee, sendBOA);
+        let sumAmountUtxo = utxosToSpend.reduce<Amount>((sum, n) => Amount.add(sum, n.amount), Amount.make(0));
+        totalFee = Amount.add(payloadFee, txFee);
+        totalSpendAmount = Amount.add(totalFee, sendBOA);
 
         // If the sum of the already extracted UTXO is less than the transfer amount including the fee, a new UTXO is added
-        while (JSBI.lessThan(sumAmountUtxo, totalSpendAmount)) {
+        while (Amount.lessThan(sumAmountUtxo, totalSpendAmount)) {
             // Add additional UTXO for the required amount.
             let moreUtxosToSpend: UnspentTxOutput[];
             try {
                 moreUtxosToSpend = await this.spendableUtxoProvider.getUTXO(
-                    JSBI.subtract(totalSpendAmount, sumAmountUtxo),
-                    JSBI.BigInt(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
+                    Amount.subtract(totalSpendAmount, sumAmountUtxo),
+                    Amount.make(Utils.FEE_FACTOR * TxInput.getEstimatedNumberOfBytes())
                 );
             } catch (e) {
                 return { code: WalletResultCode.FailedRequestUTXO, message: e.message };
@@ -367,8 +368,8 @@ export class Wallet {
 
             // endregion
 
-            sumAmountUtxo = utxosToSpend.reduce<JSBI>((sum, n) => JSBI.add(sum, n.amount), JSBI.BigInt(0));
-            totalSpendAmount = JSBI.add(JSBI.add(payloadFee, txFee), sendBOA);
+            sumAmountUtxo = utxosToSpend.reduce<Amount>((sum, n) => Amount.add(sum, n.amount), Amount.make(0));
+            totalSpendAmount = Amount.add(Amount.add(payloadFee, txFee), sendBOA);
         }
 
         try {
@@ -583,10 +584,13 @@ export class Wallet {
             return { code: WalletResultCode.ExistNotFrozenUTXO, message: "UTXO not frozen exists." };
         }
 
-        const payloadFee = JSBI.BigInt(0);
+        const payloadFee = Amount.make(0);
         const outputCount = 1;
 
-        const sumOfUTXO: JSBI = unspentTxOutputs.reduce<JSBI>((sum, u) => JSBI.add(sum, u.amount), JSBI.BigInt(0));
+        const sumOfUTXO: Amount = unspentTxOutputs.reduce<Amount>(
+            (sum, u) => Amount.add(sum, u.amount),
+            Amount.make(0)
+        );
         const txSize = Transaction.getEstimatedNumberOfBytes(unspentTxOutputs.length, outputCount, 0);
 
         let fees: TransactionFee;
@@ -599,7 +603,7 @@ export class Wallet {
 
         // Set the fee according to the option of the entered fee.
         const txFee = this.getFee(fees);
-        const amount: JSBI = JSBI.subtract(sumOfUTXO, txFee);
+        const amount: Amount = Amount.subtract(sumOfUTXO, txFee);
 
         // Build a transaction
         let tx: Transaction;
@@ -630,7 +634,7 @@ export class Wallet {
     /**
      * Returns an array of all frozen UTXOs for addresses already set
      */
-    public async getFrozenUTXOs(amount: JSBI): Promise<IWalletResult> {
+    public async getFrozenUTXOs(amount: Amount | JSBI): Promise<IWalletResult> {
         const check_res: IWalletResult = await this.checkServer();
         if (check_res.code !== WalletResultCode.Success) return check_res;
 

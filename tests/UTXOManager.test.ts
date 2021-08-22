@@ -34,7 +34,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Freeze,
                 sdk.JSBI.BigInt(1),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(0)
             ),
             new sdk.UnspentTxOutput(
@@ -43,7 +43,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(2),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(1)
             ),
             new sdk.UnspentTxOutput(
@@ -52,7 +52,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(3),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(2)
             ),
             new sdk.UnspentTxOutput(
@@ -61,7 +61,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(4),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(3)
             ),
             new sdk.UnspentTxOutput(
@@ -70,7 +70,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(5),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(4)
             ),
             new sdk.UnspentTxOutput(
@@ -79,7 +79,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(6),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(5)
             ),
             new sdk.UnspentTxOutput(
@@ -88,7 +88,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(7),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(6)
             ),
             new sdk.UnspentTxOutput(
@@ -97,7 +97,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(8),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(7)
             ),
             new sdk.UnspentTxOutput(
@@ -106,7 +106,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Payment,
                 sdk.JSBI.BigInt(9),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(8)
             ),
             new sdk.UnspentTxOutput(
@@ -115,7 +115,7 @@ describe("Test for UTXOManager", () => {
                 ),
                 sdk.OutputType.Coinbase,
                 sdk.JSBI.BigInt(10),
-                sdk.JSBI.BigInt(10),
+                sdk.Amount.make(10),
                 sdk.JSBI.BigInt(9)
             ),
         ];
@@ -131,29 +131,29 @@ describe("Test for UTXOManager", () => {
         test_manager.add([utxos[0]]);
         const sum2 = test_manager.getSum();
 
-        assert.deepStrictEqual(sum1, [sdk.JSBI.BigInt(0), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(0)]);
+        assert.deepStrictEqual(sum1, [sdk.Amount.make(0), sdk.Amount.make(10), sdk.Amount.make(0)]);
         assert.deepStrictEqual(sum1, sum2);
     });
 
     it("Check the available amount.", () => {
         // (unlock_height - 1 <= 1)
         let sum = manager.getSum(sdk.JSBI.BigInt(1));
-        assert.deepStrictEqual(sum, [sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(80)]);
+        assert.deepStrictEqual(sum, [sdk.Amount.make(10), sdk.Amount.make(10), sdk.Amount.make(80)]);
 
         sum = manager.getSum();
-        assert.deepStrictEqual(sum, [sdk.JSBI.BigInt(90), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(0)]);
+        assert.deepStrictEqual(sum, [sdk.Amount.make(90), sdk.Amount.make(10), sdk.Amount.make(0)]);
     });
 
     it("Obtain a UTXO to use - if there is enough money", () => {
-        const res = manager.getUTXO(sdk.JSBI.BigInt(15), sdk.JSBI.BigInt(5));
+        const res = manager.getUTXO(sdk.Amount.make(15), sdk.JSBI.BigInt(5));
         assert.deepStrictEqual(res, [utxos[1], utxos[2]]);
     });
 
     it("Obtain a UTXO to use - if there is not enough money", () => {
         const sum = manager.getSum(sdk.JSBI.BigInt(10));
-        assert.deepStrictEqual(sum, [sdk.JSBI.BigInt(70), sdk.JSBI.BigInt(10), sdk.JSBI.BigInt(0)]);
+        assert.deepStrictEqual(sum, [sdk.Amount.make(70), sdk.Amount.make(10), sdk.Amount.make(0)]);
 
-        const res = manager.getUTXO(sdk.JSBI.add(sum[0], sdk.JSBI.BigInt(1)), sdk.JSBI.BigInt(10));
+        const res = manager.getUTXO(sdk.Amount.add(sum[0], sdk.Amount.make(1)), sdk.JSBI.BigInt(10));
         assert.deepStrictEqual(res, []);
     });
 });

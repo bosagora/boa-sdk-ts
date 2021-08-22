@@ -16,6 +16,7 @@
 
 *******************************************************************************/
 
+import { Amount } from "../common/Amount";
 import { Hash } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
 import { OutputType } from "../data/TxOutput";
@@ -81,35 +82,35 @@ export class UTXOManager {
      * and the third is the amount that was released from the freeze
      * but locked to `unlock_height`.
      */
-    public getSum(height?: JSBI): [JSBI, JSBI, JSBI] {
+    public getSum(height?: JSBI): [Amount, Amount, Amount] {
         if (height !== undefined && JSBI.lessThan(height, JSBI.BigInt(0)))
             throw new Error(`The height must be greater than or equal to zero, not ${height.toString()}`);
 
         return this.items
             .filter((n) => !n.used)
-            .reduce<[JSBI, JSBI, JSBI]>(
+            .reduce<[Amount, Amount, Amount]>(
                 (sum, n) => {
                     if (
                         height !== undefined &&
                         JSBI.greaterThan(JSBI.subtract(n.unlock_height, JSBI.BigInt(1)), height)
                     )
-                        sum[2] = JSBI.add(sum[2], n.amount);
+                        sum[2] = Amount.add(sum[2], n.amount);
                     else {
                         switch (n.type) {
                             case OutputType.Payment:
-                                sum[0] = JSBI.add(sum[0], n.amount);
+                                sum[0] = Amount.add(sum[0], n.amount);
                                 break;
                             case OutputType.Freeze:
-                                sum[1] = JSBI.add(sum[1], n.amount);
+                                sum[1] = Amount.add(sum[1], n.amount);
                                 break;
                             case OutputType.Coinbase:
-                                sum[0] = JSBI.add(sum[0], n.amount);
+                                sum[0] = Amount.add(sum[0], n.amount);
                                 break;
                         }
                     }
                     return sum;
                 },
-                [JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0)]
+                [Amount.make(0), Amount.make(0), Amount.make(0)]
             );
     }
 
@@ -122,18 +123,23 @@ export class UTXOManager {
      * @returns Returns the available array of UTXO. If the available amount
      * is less than the requested amount, the empty array is returned.
      */
-    public getUTXO(amount: JSBI, height: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): UnspentTxOutput[] {
-        let target_amount = JSBI.BigInt(amount);
-        if (JSBI.lessThanOrEqual(target_amount, JSBI.BigInt(0)))
+    public getUTXO(
+        amount: Amount | JSBI,
+        height: JSBI,
+        estimated_input_fee: Amount | JSBI = Amount.make(0)
+    ): UnspentTxOutput[] {
+        let target_amount = amount instanceof Amount ? amount : Amount.make(amount);
+        const req_fee = estimated_input_fee instanceof Amount ? estimated_input_fee : Amount.make(estimated_input_fee);
+        if (Amount.lessThanOrEqual(target_amount, Amount.ZERO_BOA))
             throw new Error(`Positive amount expected, not ${target_amount.toString()}`);
 
         if (JSBI.lessThan(height, JSBI.BigInt(0)))
             throw new Error(`The height must be greater than or equal to zero, not ${height.toString()}`);
 
-        if (JSBI.greaterThan(target_amount, this.getSum(height)[0])) return [];
+        if (Amount.greaterThan(target_amount, this.getSum(height)[0])) return [];
 
-        target_amount = JSBI.add(target_amount, estimated_input_fee);
-        let sum = JSBI.BigInt(0);
+        target_amount = Amount.add(target_amount, req_fee);
+        let sum = Amount.make(0);
         return this.items
             .filter(
                 (n) =>
@@ -142,11 +148,11 @@ export class UTXOManager {
                     JSBI.lessThanOrEqual(JSBI.subtract(n.unlock_height, JSBI.BigInt(1)), height)
             )
             .filter((n) => {
-                if (JSBI.greaterThanOrEqual(sum, target_amount)) return false;
-                sum = JSBI.add(sum, n.amount);
+                if (Amount.greaterThanOrEqual(sum, target_amount)) return false;
+                sum = Amount.add(sum, n.amount);
                 n.used = true;
 
-                target_amount = JSBI.add(target_amount, estimated_input_fee);
+                target_amount = Amount.add(target_amount, req_fee);
                 return true;
             })
             .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount, n.height));
@@ -235,34 +241,39 @@ export class UTXOProvider {
      * @returns Returns the available array of UTXO. If the available amount
      * is less than the requested amount, the empty array is returned.
      */
-    public async getUTXO(amount: JSBI, estimated_input_fee: JSBI = JSBI.BigInt(0)): Promise<UnspentTxOutput[]> {
-        if (JSBI.lessThanOrEqual(amount, JSBI.BigInt(0)))
-            throw new Error(`Positive amount expected, not ${amount.toString()}`);
+    public async getUTXO(
+        amount: Amount | JSBI,
+        estimated_input_fee: Amount | JSBI = Amount.make(0)
+    ): Promise<UnspentTxOutput[]> {
+        const req_amount = amount instanceof Amount ? amount : Amount.make(amount);
+        const req_fee = estimated_input_fee instanceof Amount ? estimated_input_fee : Amount.make(estimated_input_fee);
+        if (Amount.lessThanOrEqual(req_amount, Amount.ZERO_BOA))
+            throw new Error(`Positive amount expected, not ${req_amount.toString()}`);
 
-        let target_amount: JSBI;
+        let target_amount: Amount;
         const result: UnspentTxOutput[] = [];
 
-        target_amount = JSBI.BigInt(amount);
+        target_amount = Amount.make(req_amount);
         while (true) {
-            target_amount = JSBI.add(target_amount, estimated_input_fee);
-            let sum = JSBI.BigInt(0);
+            target_amount = Amount.add(target_amount, req_fee);
+            let sum = Amount.make(0);
             const utxo = this.items
                 .filter((n) => !n.used)
                 .filter((n) => {
-                    if (JSBI.greaterThanOrEqual(sum, target_amount)) return false;
-                    sum = JSBI.add(sum, n.amount);
+                    if (Amount.greaterThanOrEqual(sum, target_amount)) return false;
+                    sum = Amount.add(sum, n.amount);
                     n.used = true;
 
-                    target_amount = JSBI.add(target_amount, estimated_input_fee);
+                    target_amount = Amount.add(target_amount, req_fee);
                     return true;
                 })
                 .map((n) => new UnspentTxOutput(n.utxo, n.type, n.unlock_height, n.amount, n.height));
             result.push(...utxo);
-            const res_sum = result.reduce<JSBI>((prev, value) => JSBI.add(prev, value.amount), JSBI.BigInt(0));
-            const estimated_amount = JSBI.add(amount, JSBI.multiply(estimated_input_fee, JSBI.BigInt(result.length)));
-            if (JSBI.greaterThanOrEqual(res_sum, estimated_amount)) break;
+            const res_sum = result.reduce<Amount>((prev, value) => Amount.add(prev, value.amount), Amount.make(0));
+            const estimated_amount = Amount.add(req_amount, Amount.multiply(req_fee, result.length));
+            if (Amount.greaterThanOrEqual(res_sum, estimated_amount)) break;
 
-            target_amount = JSBI.subtract(estimated_amount, res_sum);
+            target_amount = Amount.subtract(estimated_amount, res_sum);
             const additional = await this.client.getWalletUTXOs(
                 this.address,
                 target_amount,
@@ -306,13 +317,13 @@ class InternalUTXO extends UnspentTxOutput {
      * @param amount        The monetary value of UTXO
      * @param height        The block height
      */
-    constructor(utxo: Hash, type: OutputType, unlock_height: JSBI, amount: JSBI, height: JSBI) {
+    constructor(utxo: Hash, type: OutputType, unlock_height: JSBI, amount: Amount, height: JSBI) {
         super(utxo, type, unlock_height, amount, height);
 
         if (JSBI.lessThanOrEqual(this.unlock_height, JSBI.BigInt(0)))
             throw new Error(`Positive unlock_height expected, not ${unlock_height.toString()}`);
 
-        if (JSBI.lessThanOrEqual(this.amount, JSBI.BigInt(0)))
+        if (Amount.lessThanOrEqual(this.amount, Amount.ZERO_BOA))
             throw new Error(`Positive amount expected, not ${amount.toString()}`);
 
         this.used = false;

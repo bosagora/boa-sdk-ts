@@ -251,26 +251,26 @@ describe("TxCanceller", () => {
 
         if (res.tx !== undefined) {
             const tx_size = tx.getNumberOfBytes();
-            let total_fee = sdk.JSBI.BigInt(sdk.Utils.FEE_FACTOR * tx_size);
-            const minimum = sdk.JSBI.BigInt(100_000);
-            if (sdk.JSBI.lessThan(total_fee, minimum)) total_fee = sdk.JSBI.BigInt(minimum);
+            let total_fee = sdk.Amount.make(sdk.Utils.FEE_FACTOR * tx_size);
+            const minimum = sdk.Amount.make(100_000);
+            if (sdk.Amount.lessThan(total_fee, minimum)) total_fee = sdk.Amount.make(minimum);
 
-            const adjusted_fee = sdk.JSBI.divide(total_fee, sdk.JSBI.BigInt(tx_size));
+            const adjusted_fee = sdk.Amount.divide(total_fee, tx_size);
 
-            const cancel_adjusted_fee = sdk.JSBI.divide(
-                sdk.JSBI.multiply(
-                    adjusted_fee,
-                    sdk.JSBI.add(sdk.JSBI.BigInt(100), sdk.JSBI.BigInt(sdk.TxCanceller.double_spent_threshold_pct))
-                ),
-                sdk.JSBI.BigInt(100)
+            const cancel_adjusted_fee = sdk.Amount.divide(
+                sdk.Amount.multiply(adjusted_fee, 100 + sdk.TxCanceller.double_spent_threshold_pct),
+                100
             );
 
             const cancel_tx_size = res.tx.getNumberOfBytes();
-            const cancel_total_fee = sdk.JSBI.multiply(cancel_adjusted_fee, sdk.JSBI.BigInt(cancel_tx_size));
+            const cancel_total_fee = sdk.Amount.multiply(cancel_adjusted_fee, cancel_tx_size);
 
-            const in_sum = utxos.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.amount), sdk.JSBI.BigInt(0));
-            const out_sum = res.tx.outputs.reduce<sdk.JSBI>((sum, n) => sdk.JSBI.add(sum, n.value), sdk.JSBI.BigInt(0));
-            assert.deepStrictEqual(sdk.JSBI.subtract(in_sum, out_sum), cancel_total_fee);
+            const in_sum = utxos.reduce<sdk.Amount>((sum, n) => sdk.Amount.add(sum, n.amount), sdk.Amount.make(0));
+            const out_sum = res.tx.outputs.reduce<sdk.Amount>(
+                (sum, n) => sdk.Amount.add(sum, n.value),
+                sdk.Amount.make(0)
+            );
+            assert.deepStrictEqual(sdk.Amount.subtract(in_sum, out_sum), cancel_total_fee);
 
             res.tx.inputs.forEach((value: sdk.TxInput, idx: number) => {
                 expected.inputs[idx].unlock = value.unlock.toJSON();

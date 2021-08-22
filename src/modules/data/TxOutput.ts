@@ -11,7 +11,7 @@
 
 *******************************************************************************/
 
-import { hashPart } from "../common/Hash";
+import { Amount } from "../common/Amount";
 import { PublicKey } from "../common/KeyPair";
 import { Lock } from "../script/Lock";
 import { JSONValidator } from "../utils/JSONValidator";
@@ -49,7 +49,7 @@ export class TxOutput {
     /**
      * The monetary value of this output, in 1/10^7
      */
-    public value: JSBI;
+    public value: Amount;
 
     /**
      * Constructor
@@ -57,13 +57,13 @@ export class TxOutput {
      * @param value   The monetary value
      * @param lock    The public key or instance of Lock
      */
-    constructor(type: number, value: JSBI | string, lock: Lock | PublicKey) {
+    constructor(type: number, value: Amount | JSBI | string, lock: Lock | PublicKey) {
         this.type = type;
 
         if (lock instanceof PublicKey) this.lock = Lock.fromPublicKey(lock);
         else this.lock = lock;
 
-        this.value = JSBI.BigInt(value);
+        this.value = Amount.make(value);
     }
 
     /**
@@ -80,7 +80,7 @@ export class TxOutput {
         if (key !== "") return value;
 
         JSONValidator.isValidOtherwiseThrow("TxOutput", value);
-        return new TxOutput(Number(value.type), value.value, Lock.reviver("", value.lock));
+        return new TxOutput(Number(value.type), Amount.reviver("", value.value), Lock.reviver("", value.lock));
     }
 
     /**
@@ -90,7 +90,7 @@ export class TxOutput {
     public computeHash(buffer: SmartBuffer) {
         buffer.writeUInt32LE(this.type);
         this.lock.computeHash(buffer);
-        hashPart(this.value, buffer);
+        this.value.computeHash(buffer);
     }
 
     /**
@@ -99,8 +99,8 @@ export class TxOutput {
     public toJSON(key?: string): any {
         return {
             type: this.type,
-            value: this.value.toString(),
-            lock: this.lock.toJSON(),
+            value: this.value,
+            lock: this.lock,
         };
     }
 
@@ -133,7 +133,7 @@ export class TxOutput {
         const comp = Buffer.compare(a.lock.bytes, b.lock.bytes);
         if (comp !== 0) return comp;
 
-        return JSBI.greaterThan(a.value, b.value) ? 1 : JSBI.lessThan(a.value, b.value) ? -1 : 0;
+        return Amount.greaterThan(a.value, b.value) ? 1 : Amount.lessThan(a.value, b.value) ? -1 : 0;
     }
 
     /**
@@ -143,7 +143,7 @@ export class TxOutput {
     public serialize(buffer: SmartBuffer) {
         VarInt.fromNumber(this.type, buffer);
         this.lock.serialize(buffer);
-        VarInt.fromJSBI(this.value, buffer);
+        VarInt.fromJSBI(this.value.value, buffer);
     }
 
     /**

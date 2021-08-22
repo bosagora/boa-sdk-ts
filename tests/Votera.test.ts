@@ -440,7 +440,9 @@ describe("Checking the proposal and ballot data", () => {
                                 expected_data.proposal_fee_address.toString()
                         );
                         assert.ok(find_idx >= 0);
-                        assert.ok(sdk.JSBI.greaterThanOrEqual(tx.outputs[find_idx].value, expected_data.proposal_fee));
+                        assert.ok(
+                            sdk.JSBI.greaterThanOrEqual(tx.outputs[find_idx].value.value, expected_data.proposal_fee)
+                        );
                     });
                 } else if (Buffer.compare(Buffer.from(sdk.ProposalData.HEADER), header) === 0) {
                     // Exceptions should be handled in actual use.
@@ -469,8 +471,8 @@ describe("Checking the proposal and ballot data", () => {
                                 (o) => new sdk.PublicKey(o.lock.bytes).toString() === validator
                             );
                             assert.ok(find_idx >= 0);
-                            assert.ok(sdk.JSBI.greaterThanOrEqual(tx.outputs[find_idx].value, vote_cost));
-                            sum_vote_cost = sdk.JSBI.add(sum_vote_cost, tx.outputs[find_idx].value);
+                            assert.ok(sdk.JSBI.greaterThanOrEqual(tx.outputs[find_idx].value.value, vote_cost));
+                            sum_vote_cost = sdk.JSBI.add(sum_vote_cost, tx.outputs[find_idx].value.value);
                         });
                         // This verifies that the sum of the voting costs is appropriate.
                         assert.ok(sdk.JSBI.greaterThanOrEqual(sum_vote_cost, expected_data.vote_fee));

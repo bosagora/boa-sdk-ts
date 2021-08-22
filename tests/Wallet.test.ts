@@ -84,7 +84,7 @@ describe("Wallet", () => {
         const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
-                amount: sdk.JSBI.BigInt(100000000),
+                amount: sdk.BOA(10),
             },
         ]);
 
@@ -138,7 +138,7 @@ describe("Wallet", () => {
         const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
-                amount: sdk.JSBI.BigInt(100000000),
+                amount: sdk.BOA(10),
             },
         ]);
 
@@ -160,7 +160,7 @@ describe("Wallet", () => {
         const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
-                amount: sdk.JSBI.BigInt(100000000),
+                amount: sdk.BOA(10),
             },
         ]);
 
@@ -182,7 +182,7 @@ describe("Wallet", () => {
         const res = await wallet.transfer([
             {
                 address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
-                amount: sdk.JSBI.BigInt(100000000),
+                amount: sdk.BOA(10),
             },
         ]);
 
@@ -320,7 +320,7 @@ describe("Wallet", () => {
 
         const res = await wallet.freeze({
             address: new sdk.PublicKey("boa1xrc00kar2yqa3jzve9cm4cvuaa8duazkuwrygmqgpcuf0gqww8ye7ua9lkl"),
-            amount: sdk.JSBI.BigInt(100000000),
+            amount: sdk.BOA(10),
         });
 
         const expected = {

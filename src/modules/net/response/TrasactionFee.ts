@@ -49,13 +49,13 @@ export class TransactionFee {
         else this.tx_size = 0;
 
         if (medium !== undefined) this.medium = medium;
-        else this.medium = "0.01";
+        else this.medium = "100000";
 
         if (high !== undefined) this.high = high;
-        else this.high = "0.01";
+        else this.high = "100000";
 
         if (low !== undefined) this.low = low;
-        else this.low = "0.01";
+        else this.low = "100000";
     }
 
     /**

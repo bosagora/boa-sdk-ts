@@ -11,6 +11,7 @@
 
 *******************************************************************************/
 
+import { Amount } from "../../common/Amount";
 import { Hash } from "../../common/Hash";
 import { OutputType } from "../../data/TxOutput";
 import { Utils } from "../../utils/Utils";
@@ -39,7 +40,7 @@ export class UnspentTxOutput {
     /**
      * The amount value of this utxo, in 1/10^7
      */
-    amount: JSBI;
+    amount: Amount;
 
     /**
      * Block height on created
@@ -76,7 +77,7 @@ export class UnspentTxOutput {
         utxo?: Hash,
         type?: OutputType,
         unlock_height?: JSBI,
-        amount?: JSBI,
+        amount?: Amount,
         height?: JSBI,
         time?: number,
         lock_type?: number,
@@ -91,8 +92,8 @@ export class UnspentTxOutput {
         if (unlock_height !== undefined) this.unlock_height = JSBI.BigInt(unlock_height);
         else this.unlock_height = JSBI.BigInt(0);
 
-        if (amount !== undefined) this.amount = JSBI.BigInt(amount);
-        else this.amount = JSBI.BigInt(0);
+        if (amount !== undefined) this.amount = Amount.make(amount.value);
+        else this.amount = Amount.make(0);
 
         if (height !== undefined) this.height = JSBI.BigInt(height);
         else this.height = JSBI.BigInt(0);
@@ -117,7 +118,7 @@ export class UnspentTxOutput {
         this.utxo.fromString(data.utxo);
         this.type = data.type;
         this.unlock_height = JSBI.BigInt(data.unlock_height);
-        this.amount = JSBI.BigInt(data.amount);
+        this.amount = Amount.make(JSBI.BigInt(data.amount));
         this.height = JSBI.BigInt(data.height);
         this.time = data.time;
         this.lock_type = data.lock_type;

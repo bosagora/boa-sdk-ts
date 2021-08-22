@@ -14,8 +14,7 @@
 
 *******************************************************************************/
 
-import { AxiosResponse } from "axios";
-import uri from "urijs";
+import { Amount } from "../common/Amount";
 import { Hash, hash } from "../common/Hash";
 import { PublicKey } from "../common/KeyPair";
 import { Transaction } from "../data/Transaction";
@@ -29,7 +28,9 @@ import { BalanceType, IPendingTxs, ISPVStatus, ITxHistoryElement, ITxOverview } 
 import { UnspentTxOutput } from "./response/UnspentTxOutput";
 import { Validator } from "./response/Validator";
 
+import { AxiosResponse } from "axios";
 import JSBI from "jsbi";
+import uri from "urijs";
 
 /**
  * Define the BOA Client of TypeScript.
@@ -545,7 +546,7 @@ export class BOAClient {
      */
     public getWalletUTXOs(
         address: PublicKey,
-        amount: JSBI,
+        amount: JSBI | Amount,
         type: BalanceType,
         last?: Hash
     ): Promise<UnspentTxOutput[]> {
