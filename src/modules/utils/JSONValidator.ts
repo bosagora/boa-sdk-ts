@@ -271,8 +271,66 @@ export class JSONValidator {
                         type: "string",
                     },
                 },
-                additionalProperties: false,
+                additionalProperties: true,
                 required: ["address", "balance", "spendable", "frozen", "locked"],
+            },
+        ],
+        [
+            "TransactionFee",
+            {
+                title: "TransactionFee",
+                type: "object",
+                properties: {
+                    tx_size: {
+                        type: "number",
+                    },
+                    medium: {
+                        type: "string",
+                    },
+                    high: {
+                        type: "string",
+                    },
+                    low: {
+                        type: "string",
+                    },
+                },
+                additionalProperties: true,
+                required: ["tx_size", "medium", "high", "low"],
+            },
+        ],
+        [
+            "UnspentTxOutput",
+            {
+                title: "UnspentTxOutput",
+                type: "object",
+                properties: {
+                    utxo: {
+                        type: "string",
+                    },
+                    type: {
+                        type: "integer",
+                    },
+                    amount: {
+                        type: "string",
+                    },
+                    height: {
+                        type: "string",
+                    },
+                    time: {
+                        type: "integer",
+                    },
+                    unlock_height: {
+                        type: "string",
+                    },
+                    lock_type: {
+                        type: "integer",
+                    },
+                    lock_bytes: {
+                        type: "string",
+                    },
+                },
+                additionalProperties: true,
+                required: ["utxo", "type", "height", "time", "unlock_height", "amount", "lock_type", "lock_bytes"],
             },
         ],
     ]);
@@ -319,7 +377,7 @@ export class JSONValidator {
      */
     public static isValidOtherwiseThrow(schema_name: string, candidate: any) {
         const validator = this.buildValidator(schema_name);
-        if (this.isValid(validator, candidate) === true) {
+        if (this.isValid(validator, candidate)) {
             return true;
         } else if (validator.errors !== undefined && validator.errors !== null && validator.errors.length > 0) {
             if (validator.errors.length === 1) {

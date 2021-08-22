@@ -270,9 +270,7 @@ export class BOAClient {
                 .then((response: AxiosResponse) => {
                     const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        const utxo = new UnspentTxOutput();
-                        utxo.fromJSON(elem);
-                        utxos.push(utxo);
+                        utxos.push(UnspentTxOutput.reviver("", elem));
                     });
                     resolve(utxos);
                 })
@@ -297,9 +295,7 @@ export class BOAClient {
                 .then((response: AxiosResponse) => {
                     const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        const utxo = new UnspentTxOutput();
-                        utxo.fromJSON(elem);
-                        utxos.push(utxo);
+                        utxos.push(UnspentTxOutput.reviver("", elem));
                     });
                     resolve(utxos);
                 })
@@ -363,9 +359,7 @@ export class BOAClient {
             Request.get(url.toString())
                 .then((response: AxiosResponse) => {
                     if (response.status === 200) {
-                        const fees = new TransactionFee();
-                        fees.fromJSON(response.data);
-                        resolve(fees);
+                        resolve(TransactionFee.reviver("", response.data));
                     } else {
                         // It is not yet defined in Stoa.
                         reject(handleNetworkError({ response }));
@@ -562,9 +556,7 @@ export class BOAClient {
                 .then((response: AxiosResponse) => {
                     const utxos: UnspentTxOutput[] = new Array<UnspentTxOutput>();
                     response.data.forEach((elem: any) => {
-                        const utxo = new UnspentTxOutput();
-                        utxo.fromJSON(elem);
-                        utxos.push(utxo);
+                        utxos.push(UnspentTxOutput.reviver("", elem));
                     });
                     resolve(utxos);
                 })

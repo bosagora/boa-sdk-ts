@@ -92,11 +92,7 @@ describe("TxCanceller", () => {
         const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // change transaction output type
         utxo_data[0].type = sdk.OutputType.Freeze;
-        const utxos = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         const tx = makeOriginalTransaction(
             key_pairs[0],
@@ -113,11 +109,7 @@ describe("TxCanceller", () => {
         const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // remove one utxo
         utxo_data.pop();
-        const utxos = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         const tx = makeOriginalTransaction(
             key_pairs[0],
@@ -134,11 +126,7 @@ describe("TxCanceller", () => {
         const utxo_data = JSON.parse(JSON.stringify(utxo_array));
         // change a lock type
         utxo_data[0].lock_type = sdk.LockType.KeyHash;
-        const utxos = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         const tx = makeOriginalTransaction(
             key_pairs[0],
@@ -153,11 +141,7 @@ describe("TxCanceller", () => {
 
     it("Transactions cannot be canceled without a KeyPair to use UTXO.", () => {
         const utxo_data = JSON.parse(JSON.stringify(utxo_array));
-        const utxos = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         // remove a keypair
         const keys = key_pairs.slice();
@@ -179,11 +163,7 @@ describe("TxCanceller", () => {
         // change amount
         utxo_data[0].amount = "52000";
         utxo_data[1].amount = "52000";
-        const utxos = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         const tx = makeOriginalTransaction(key_pairs[0], sdk.JSBI.BigInt(52000), sdk.JSBI.BigInt(0.0001 * 10_000_000));
         const canceller = new sdk.TxCanceller(tx, utxos, key_pairs);
@@ -194,11 +174,7 @@ describe("TxCanceller", () => {
 
     it("Successful testing of cancellation transactions", () => {
         const utxo_data = JSON.parse(JSON.stringify(utxo_array));
-        const utxos: sdk.UnspentTxOutput[] = utxo_data.map((m: any) => {
-            const utxo = new sdk.UnspentTxOutput();
-            utxo.fromJSON(m);
-            return utxo;
-        });
+        const utxos: sdk.UnspentTxOutput[] = utxo_data.map((m: any) => sdk.UnspentTxOutput.reviver("", m));
 
         const tx = makeOriginalTransaction(
             key_pairs[0],

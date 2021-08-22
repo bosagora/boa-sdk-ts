@@ -11,7 +11,7 @@
 
 *******************************************************************************/
 
-import { Utils } from "../../utils/Utils";
+import { JSONValidator } from "../../utils/JSONValidator";
 
 /**
  * Define the interface of the fee of the transaction
@@ -44,30 +44,27 @@ export class TransactionFee {
      * @param high The transaction fee for a high speed
      * @param low The transaction fee for a low speed
      */
-    constructor(tx_size?: number, medium?: string, high?: string, low?: string) {
-        if (tx_size !== undefined) this.tx_size = tx_size;
-        else this.tx_size = 0;
-
-        if (medium !== undefined) this.medium = medium;
-        else this.medium = "100000";
-
-        if (high !== undefined) this.high = high;
-        else this.high = "100000";
-
-        if (low !== undefined) this.low = low;
-        else this.low = "100000";
+    constructor(tx_size: number, medium: string, high: string, low: string) {
+        this.tx_size = tx_size;
+        this.medium = medium;
+        this.high = high;
+        this.low = low;
     }
 
     /**
-     * This import from JSON
-     * @param data The object of the JSON
+     * The reviver parameter to give to `JSON.parse`
+     *
+     * This function allows to perform any necessary conversion,
+     * as well as validation of the final object.
+     *
+     * @param key   Name of the field being parsed
+     * @param value The value associated with `key`
+     * @returns A new instance of `TransactionFee` if `key == ""`, `value` otherwise.
      */
-    public fromJSON(data: any) {
-        Utils.validateJSON(this, data);
+    public static reviver(key: string, value: any): any {
+        if (key !== "") return value;
 
-        this.tx_size = data.tx_size;
-        this.medium = data.medium;
-        this.high = data.high;
-        this.low = data.low;
+        JSONValidator.isValidOtherwiseThrow("TransactionFee", value);
+        return new TransactionFee(value.tx_size, value.medium, value.high, value.low);
     }
 }
