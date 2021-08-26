@@ -91,7 +91,7 @@ export class Signature {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): string {
+    public toJSON(): string {
         return this.toString();
     }
 

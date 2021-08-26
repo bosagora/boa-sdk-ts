@@ -129,7 +129,7 @@ export class Lock {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): any {
+    public toJSON(): any {
         return {
             type: this.type,
             bytes: this.bytes.toString("base64"),
@@ -226,7 +226,7 @@ export class Unlock {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): any {
+    public toJSON(): any {
         return {
             bytes: this.bytes.toString("base64"),
         };

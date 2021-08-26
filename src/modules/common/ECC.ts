@@ -114,7 +114,7 @@ export class Scalar {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): string {
+    public toJSON(): string {
         return this.toString();
     }
 
@@ -337,7 +337,7 @@ export class Point {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): string {
+    public toJSON(): string {
         return this.toString();
     }
 

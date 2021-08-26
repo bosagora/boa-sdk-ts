@@ -108,7 +108,7 @@ export class Transaction {
     /**
      * Converts this object to its JSON representation
      */
-    public toJSON(key?: string): any {
+    public toJSON(): any {
         return {
             inputs: this.inputs,
             outputs: this.outputs,
