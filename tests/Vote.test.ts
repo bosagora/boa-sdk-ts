@@ -130,7 +130,7 @@ describe("Vote Data", () => {
         );
         const app_name = "Votera";
         const proposal_id = "ID1234567890";
-        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_agora_admin = sdk.hashMulti(pre_image, Buffer.from(app_name));
         const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
 
         const message = Buffer.from([sdk.BallotData.YES]);
@@ -168,7 +168,7 @@ describe("Vote Data", () => {
         );
         const app_name = "Votera";
         const proposal_id = "ID1234567890";
-        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_agora_admin = sdk.hashMulti(pre_image, Buffer.from(app_name));
         const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
         const ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.BLANK]), key_encrypt);
         const ballot_data = new sdk.BallotData(app_name, proposal_id, ballot, voter_card, 100);
@@ -260,7 +260,7 @@ describe("Vote Data", () => {
         );
         const app_name = "Votera";
         const proposal_id = "ID1234567890";
-        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+        const key_agora_admin = sdk.hashMulti(pre_image, Buffer.from(app_name));
         const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
         const ballot = sdk.Encrypt.encrypt(Buffer.from([sdk.BallotData.YES]), key_encrypt);
         const ballot_data = new sdk.BallotData(app_name, "ID1234567890", ballot, voter_card, 100);

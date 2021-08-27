@@ -60,7 +60,7 @@ describe("Hash", () => {
         const bar = sdk.hash(Buffer.from("bar"));
 
         // Hash Multi
-        const h = sdk.hashMulti(foo.data, bar.data);
+        const h = sdk.hashMulti(foo, bar);
 
         // Check
         assert.strictEqual(
@@ -72,7 +72,7 @@ describe("Hash", () => {
         const boa = sdk.hash(Buffer.from("boa"));
 
         const h2 = sdk.hash(Buffer.concat([foo.data, bar.data, boa.data]));
-        const h3 = sdk.hashMulti(foo.data, bar.data, boa.data);
+        const h3 = sdk.hashMulti(foo, bar, boa);
 
         // Check
         assert.strictEqual(h3.toString(), h2.toString());

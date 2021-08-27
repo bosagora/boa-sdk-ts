@@ -494,7 +494,7 @@ describe("Checking the proposal and ballot data", () => {
                         );
                         const app_name = "Votera";
                         const proposal_id = payload.proposal_id;
-                        const key_agora_admin = sdk.hashMulti(pre_image.data, Buffer.from(app_name));
+                        const key_agora_admin = sdk.hashMulti(pre_image, Buffer.from(app_name));
                         const key_encrypt = sdk.Encrypt.createKey(key_agora_admin.data, proposal_id);
                         assert.deepStrictEqual(
                             sdk.Encrypt.decrypt(payload.ballot, key_encrypt),

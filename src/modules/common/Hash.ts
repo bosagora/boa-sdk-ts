@@ -134,13 +134,14 @@ export function hash(source: Buffer): Hash {
 
 /**
  * Creates a hash of the two buffer combined.
- * @param args The array of Buffer for creating hash
+ * @param args The array of any for creating hash
  * @returns The instance of Hash
  * See_Also https://github.com/bosagora/agora/blob/93c31daa616e76011deee68a8645e1b86624ce3d/source/agora/common/Hash.d#L239-L255
  */
-export function hashMulti(...args: Buffer[]): Hash {
-    const buffer = args.reduce<Buffer>((sum, elem) => Buffer.concat([sum, elem]), Buffer.alloc(0));
-    return new Hash(Buffer.from(SodiumHelper.sodium.crypto_generichash(Hash.Width, buffer)));
+export function hashMulti(...args: any[]): Hash {
+    const buffer = new SmartBuffer();
+    for (const m of args) hashPart(m, buffer, false);
+    return new Hash(Buffer.from(SodiumHelper.sodium.crypto_generichash(Hash.Width, buffer.toBuffer())));
 }
 
 /**
@@ -153,7 +154,7 @@ export function hashMulti(...args: Buffer[]): Hash {
 export function makeUTXOKey(h: Hash, index: JSBI): Hash {
     const buf = Buffer.allocUnsafe(8);
     Utils.writeJSBigIntLE(buf, index);
-    return hashMulti(h.data, buf);
+    return hashMulti(h, buf);
 }
 
 /**
@@ -175,8 +176,9 @@ export function hashFull(record: any): Hash {
  * Serializes all internal objects that the instance contains in the buffer.
  * @param record The object to serialize for the hash for creation
  * @param buffer The storage of serialized data for creating the hash
+ * @param write_length Choose whether to record the size of the array or not.
  */
-export function hashPart(record: any, buffer: SmartBuffer) {
+export function hashPart(record: any, buffer: SmartBuffer, write_length: boolean = true) {
     if (record === null || record === undefined) return;
 
     // If the record has a method called `computeHash`,
@@ -187,7 +189,7 @@ export function hashPart(record: any, buffer: SmartBuffer) {
 
     if (typeof record === "string") {
         const buf = Buffer.from(record);
-        hashVarInt(JSBI.BigInt(buf.length), buffer);
+        if (write_length) hashVarInt(JSBI.BigInt(buf.length), buffer);
         buffer.writeBuffer(buf);
         return;
     }
@@ -205,13 +207,13 @@ export function hashPart(record: any, buffer: SmartBuffer) {
     }
 
     if (record instanceof Buffer) {
-        hashVarInt(JSBI.BigInt(record.length), buffer);
+        if (write_length) hashVarInt(JSBI.BigInt(record.length), buffer);
         buffer.writeBuffer(record);
         return;
     }
 
     if (Array.isArray(record)) {
-        hashVarInt(JSBI.BigInt(record.length), buffer);
+        if (write_length) hashVarInt(JSBI.BigInt(record.length), buffer);
         for (const elem of record) {
             hashPart(elem, buffer);
         }
