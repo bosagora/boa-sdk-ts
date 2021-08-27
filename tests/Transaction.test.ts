@@ -240,4 +240,15 @@ describe("Transaction", () => {
             sdk.Utils.SIZE_OF_LONG; //  Transaction.lock_height
         assert.strictEqual(tx.getNumberOfBytes(), nBytes);
     });
+
+    it("Test for Transaction.clone()", () => {
+        const tx = new sdk.Transaction(
+            [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
+            [new sdk.TxOutput(sdk.OutputType.Payment, "0", sdk.Lock.Null)],
+            Buffer.from([4, 6])
+        );
+
+        const clone_tx = tx.clone();
+        assert.deepStrictEqual(tx, clone_tx);
+    });
 });

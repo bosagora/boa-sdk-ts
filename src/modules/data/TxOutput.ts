@@ -156,4 +156,11 @@ export class TxOutput {
         const value = VarInt.toJSBI(buffer);
         return new TxOutput(type, value, lock);
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): TxOutput {
+        return new TxOutput(this.type, this.value, this.lock.clone());
+    }
 }

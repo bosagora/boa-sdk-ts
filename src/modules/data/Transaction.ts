@@ -214,4 +214,16 @@ export class Transaction {
 
         return new Transaction(inputs, outputs, payload, lock_height);
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): Transaction {
+        return new Transaction(
+            this.inputs.map((m) => m.clone()),
+            this.outputs.map((m) => m.clone()),
+            Buffer.from(this.payload),
+            this.lock_height.clone()
+        );
+    }
 }

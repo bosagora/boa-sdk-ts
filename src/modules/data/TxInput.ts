@@ -135,4 +135,11 @@ export class TxInput {
         const unlock_age = VarInt.toNumber(buffer);
         return new TxInput(utxo, unlock, unlock_age);
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): TxInput {
+        return new TxInput(this.utxo.clone(), this.unlock.clone(), this.unlock_age);
+    }
 }

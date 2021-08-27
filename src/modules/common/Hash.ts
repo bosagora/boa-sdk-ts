@@ -121,6 +121,13 @@ export class Hash {
     public static deserialize(buffer: SmartBuffer): Hash {
         return new Hash(Utils.readBuffer(buffer, Hash.Width));
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): Hash {
+        return new Hash(this.data);
+    }
 }
 
 /**

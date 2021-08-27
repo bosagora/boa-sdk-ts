@@ -165,6 +165,13 @@ export class Lock {
         const length = VarInt.toNumber(buffer);
         return new Lock(type, Utils.readBuffer(buffer, length));
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): Lock {
+        return new Lock(this.type, this.bytes);
+    }
 }
 
 /**
@@ -255,5 +262,12 @@ export class Unlock {
     public static deserialize(buffer: SmartBuffer): Unlock {
         const length = VarInt.toNumber(buffer);
         return new Unlock(Utils.readBuffer(buffer, length));
+    }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): Unlock {
+        return new Unlock(this.bytes);
     }
 }

@@ -82,4 +82,11 @@ export class Height {
     public static deserialize(buffer: SmartBuffer): Height {
         return new Height(VarInt.toJSBI(buffer));
     }
+
+    /**
+     * Creates and returns a copy of this object.
+     */
+    public clone(): Height {
+        return new Height(this.value);
+    }
 }
