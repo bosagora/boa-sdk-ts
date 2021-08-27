@@ -232,7 +232,7 @@ describe("Wallet", () => {
                     {
                         utxo: "0x4451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
                         unlock: {
-                            bytes: "Sqxo1En3qMjcne9xnUy0uabpIckBnO3z6z13QCPj/AQlK8gQENdZQuSm9gMkil9/Z0bGGMvI77kHClXPSLPR0g==",
+                            bytes: "+x8n8fbcCdwGemBZs+6RqDAET89N71qQ8UmMUq56PQL/t+pAuKSNY4JqniWV8/Xecoz3UriDYK2rb+BrvUJERQE=",
                         },
                         unlock_age: 0,
                     },
@@ -240,11 +240,8 @@ describe("Wallet", () => {
                 outputs: [
                     {
                         type: 0,
-                        value: "1999903800",
-                        lock: {
-                            type: 0,
-                            bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=",
-                        },
+                        value: "1999903280",
+                        lock: { type: 0, bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=" },
                     },
                 ],
                 payload: "",
@@ -254,7 +251,6 @@ describe("Wallet", () => {
 
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
         assert.ok(res.data !== undefined);
-
         assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
         assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
@@ -274,13 +270,13 @@ describe("Wallet", () => {
 
         const expected = {
             code: 0,
-            message: "Success",
+            message: "Success.",
             data: {
                 inputs: [
                     {
                         utxo: "0x4451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
                         unlock: {
-                            bytes: "Sqxo1En3qMjcne9xnUy0uabpIckBnO3z6z13QCPj/AQlK8gQENdZQuSm9gMkil9/Z0bGGMvI77kHClXPSLPR0g==",
+                            bytes: "hGUZsCYoX3tOZEHNKwc42FRYSHN7Z3AZV8diNPIJzwl0PlpTCJgYXXQIYVZeeTEiaGpcjNItfOuoQv19h0yyUgE=",
                         },
                         unlock_age: 0,
                     },
@@ -288,18 +284,14 @@ describe("Wallet", () => {
                 outputs: [
                     {
                         type: 0,
-                        value: "1999903800",
-                        lock: {
-                            type: 0,
-                            bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=",
-                        },
+                        value: "1999903280",
+                        lock: { type: 0, bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=" },
                     },
                 ],
                 payload: "",
                 lock_height: "0",
             },
         };
-
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
         assert.ok(res.data !== undefined);
 
@@ -331,7 +323,7 @@ describe("Wallet", () => {
                     {
                         utxo: "0x4451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
                         unlock: {
-                            bytes: "jD3BOf50fKBnZAeUlZ1E7LQf6aKi1jc0KX0nXfwZLQjbE8E2CyU3U4Nb/GAcxT++gXs+P09AEoBwFxI77UdGNg==",
+                            bytes: "pzlI7ka0B1637kgtOczXrJ7Nbja9xi2zXLbDe3zOvAew+ZnYYD0uFS/LcLjRJQtSGuUtu9ObAPGnC3toaTAXJwE=",
                         },
                         unlock_age: 0,
                     },
@@ -352,9 +344,9 @@ describe("Wallet", () => {
                 lock_height: "0",
             },
         };
-
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
         assert.ok(res.data !== undefined);
+
         assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
         assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });
@@ -387,7 +379,7 @@ describe("Wallet", () => {
                     {
                         utxo: "0x7d85d61fd9d7bb663349ca028bd023ad1bd8fa65c68b4b1363a9c7406b4d663fd73fd386195ba2389100b5cd5fc06b440f053fe513f739844e2d72df302e8ad0",
                         unlock: {
-                            bytes: "p/LCgG16AyLpClizUHE/R8dTJRgqgP2PjitJyZFZ+gmgdoLbloRs/fyLux57PznMlf90KAumyKrZ+UCj0Gjbmw==",
+                            bytes: "j+o6tOkLFYDak8cIDNx6OwtIeFNuSQjMLHhD9ooDLgBLvbtuDYFUgVQTC8lZ+pRwHVwL34qwF4IDSXMnjYKvRQE=",
                         },
                         unlock_age: 0,
                     },
@@ -403,9 +395,9 @@ describe("Wallet", () => {
                 lock_height: "0",
             },
         };
-
         assert.deepStrictEqual(res.code, sdk.WalletResultCode.Success);
         assert.ok(res.data !== undefined);
+
         assert.deepStrictEqual(res.data.inputs[0].utxo.toString(), expected.data.inputs[0].utxo);
         assert.deepStrictEqual(JSON.stringify(res.data.outputs), JSON.stringify(expected.data.outputs));
     });

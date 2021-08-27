@@ -164,7 +164,7 @@ describe("Test that JSON.stringify of Transaction", () => {
         );
         assert.strictEqual(
             JSON.stringify(tx),
-            `{"inputs":[{"utxo":"0xd9482016835acc6defdfd060216a5890e00cf8f0a79ab0b83d3385fc723cd45bfea66eb3587a684518ff1756951d38bf4f07abda96dcdea1c160a4f83e377c32","unlock":{"bytes":"vaX+wxScBr2KIsPgKzku9kkGrfuQI8ar1eXWn9LoHxfWrLOmnliHjkGOGWk+QJ7urnpz9lRENrCMv9gsQZ4DCQ=="},"unlock_age":0}],"outputs":[{"type":0,"value":"1663400000","lock":{"type":0,"bytes":"xOYx2v6aWx69nACIFINcMrCytXJmcWy99/N+ZlGEIWM="}},{"type":0,"value":"24398336600000","lock":{"type":0,"bytes":"0D1pDd0lnVdG8/9Oj0C1+TfdESEVm/lpOY39/WVKJNU="}}],"payload":"YXRhZCBldG92","lock_height":"0"}`
+            `{"inputs":[{"utxo":"0xd9482016835acc6defdfd060216a5890e00cf8f0a79ab0b83d3385fc723cd45bfea66eb3587a684518ff1756951d38bf4f07abda96dcdea1c160a4f83e377c32","unlock":{"bytes":"vaX+wxScBr2KIsPgKzku9kkGrfuQI8ar1eXWn9LoHxfWrLOmnliHjkGOGWk+QJ7urnpz9lRENrCMv9gsQZ4DCQE="},"unlock_age":0}],"outputs":[{"type":0,"value":"1663400000","lock":{"type":0,"bytes":"xOYx2v6aWx69nACIFINcMrCytXJmcWy99/N+ZlGEIWM="}},{"type":0,"value":"24398336600000","lock":{"type":0,"bytes":"0D1pDd0lnVdG8/9Oj0C1+TfdESEVm/lpOY39/WVKJNU="}}],"payload":"YXRhZCBldG92","lock_height":"0"}`
         );
     });
 });

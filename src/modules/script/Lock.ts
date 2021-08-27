@@ -41,6 +41,7 @@ import { Signature } from "../common/Signature";
 import { JSONValidator } from "../utils/JSONValidator";
 import { Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
+import { SigPair } from "./Signature";
 
 import { SmartBuffer } from "smart-buffer";
 
@@ -219,7 +220,16 @@ export class Unlock {
      * @returns The unlock script
      */
     public static fromSignature(sig: Signature): Unlock {
-        return new Unlock(sig.data);
+        return Unlock.fromSigPair(new SigPair(sig));
+    }
+
+    /**
+     * Generates a LockType.Key unlock script.
+     * @param sig The instance of SigPair that will be embedded in the script
+     * @returns The unlock script
+     */
+    public static fromSigPair(sig: SigPair): Unlock {
+        return new Unlock(sig.encode());
     }
 
     /**

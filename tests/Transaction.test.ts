@@ -215,7 +215,7 @@ describe("Transaction", () => {
     });
 
     it("Test of estimated size", () => {
-        assert.strictEqual(sdk.TxInput.getEstimatedNumberOfBytes(), 132);
+        assert.strictEqual(sdk.TxInput.getEstimatedNumberOfBytes(), 133);
         assert.strictEqual(sdk.TxOutput.getEstimatedNumberOfBytes(), 45);
         assert.strictEqual(sdk.Transaction.getEstimatedNumberOfBytes(0, 0, 0), 8);
     });
@@ -250,5 +250,17 @@ describe("Transaction", () => {
 
         const clone_tx = tx.clone();
         assert.deepStrictEqual(tx, clone_tx);
+    });
+
+    it("Test for Transaction.getChallenge()", () => {
+        const tx = new sdk.Transaction(
+            [sdk.TxInput.fromTxHash(new sdk.Hash(Buffer.alloc(sdk.Hash.Width)), sdk.JSBI.BigInt(0))],
+            [new sdk.TxOutput(sdk.OutputType.Payment, "0", sdk.Lock.Null)],
+            Buffer.alloc(0)
+        );
+        assert.deepStrictEqual(
+            tx.getChallenge().toString(),
+            "0xcea9497ef31f10007215455d20b25d3857100fb07395a4dea9015465a3d916bd82a3ab3fadce98673f1ca913f50e49460d88c2f704ebb2badc435af5699e3b80"
+        );
     });
 });

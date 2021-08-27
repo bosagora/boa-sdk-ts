@@ -11,8 +11,9 @@
 
 *******************************************************************************/
 
-import { hashPart } from "../common/Hash";
+import { Hash, hashMulti, hashPart } from "../common/Hash";
 import { Height } from "../common/Height";
+import { SigHash } from "../script/Signature";
 import { JSONValidator } from "../utils/JSONValidator";
 import { iota, Utils } from "../utils/Utils";
 import { VarInt } from "../utils/VarInt";
@@ -225,5 +226,52 @@ export class Transaction {
             Buffer.from(this.payload),
             this.lock_height.clone()
         );
+    }
+
+    /**
+     * Gets the challenge hash for the provided transaction, input index,
+     * and the type of SigHash. This cannot be folded into a `sign` routine
+     * because it's also required during signature validation.
+     * @param sig_hash   The `SigHash` to use
+     * @param input_idx  The associated input index we're signing for
+     * @param output_idx The associated output index we're signing for
+     * @returns the challenge as a hash
+     */
+    public getChallenge(sig_hash: SigHash = SigHash.All, input_idx: number = 0, output_idx: number = 0): Hash {
+        if (sig_hash !== SigHash.All) {
+            if (input_idx >= this.inputs.length || input_idx < 0) throw new Error("Input index is out of range");
+            if ((sig_hash & SigHash.Single) !== 0)
+                if (output_idx >= this.outputs.length || output_idx < 0)
+                    throw new Error("Output index is out of range");
+        }
+
+        if (sig_hash === SigHash.All) return hashMulti(this, Buffer.from([sig_hash]));
+
+        const dup: Transaction = this.clone();
+        switch (sig_hash) {
+            case SigHash.NoInput:
+                dup.inputs.length = 0;
+                dup.inputs.push(...this.inputs.slice(0, input_idx));
+                dup.inputs.push(...this.inputs.slice(input_idx + 1));
+                return hashMulti(dup, Buffer.from([sig_hash]));
+            case SigHash.Single:
+                dup.outputs.length = 0;
+                dup.outputs.push(...this.outputs.slice(output_idx, output_idx + 1));
+                return hashMulti(dup, Buffer.from([sig_hash]));
+            case SigHash.Single_AnyoneCanPay:
+                dup.inputs.length = 0;
+                dup.outputs.length = 0;
+                dup.inputs.push(...this.inputs.slice(input_idx, input_idx + 1));
+                dup.outputs.push(...this.outputs.slice(output_idx, output_idx + 1));
+                return hashMulti(dup, Buffer.from([sig_hash]));
+            case SigHash.Single_NoInput_AnyoneCanPay:
+                dup.inputs.length = 0;
+                dup.outputs.length = 0;
+                dup.outputs.push(...this.outputs.slice(output_idx, output_idx + 1));
+                return hashMulti(dup, Buffer.from([sig_hash]));
+            case SigHash.AnyoneCanPay:
+            default:
+                throw new Error("Invalid SigHash");
+        }
     }
 }

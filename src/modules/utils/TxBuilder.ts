@@ -183,7 +183,7 @@ export class TxBuilder {
      * @private
      */
     private keyUnlocker(tx: Transaction, raw_input: RawInput, idx: number): Unlock {
-        return Unlock.fromSignature(raw_input.key.sign<Transaction>(tx));
+        return Unlock.fromSignature(raw_input.key.sign<Hash>(tx.getChallenge()));
     }
 }
 

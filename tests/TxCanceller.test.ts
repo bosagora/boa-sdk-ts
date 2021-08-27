@@ -191,14 +191,14 @@ describe("TxCanceller", () => {
                 {
                     utxo: "0x6fbcdb2573e0f5120f21f1875b6dc281c2eca3646ec2c39d703623d89b0eb83cd4b12b73f18db6bc6e8cbcaeb100741f6384c498ff4e61dd189e728d80fb9673",
                     unlock: {
-                        bytes: "yMh/dP7Vt0qjMCvG7Se/R2gIT6NGzMvPuXmL16h8zQZYDxvIDLC4FY6vrAybr+DQUtPPxmKwJ6J6ikL733dAYg==",
+                        bytes: "Qgp1us76zo/9NyHXqMxyoTrYg1xclG9h8oi99GgOqwjQnMeyw2Lfaab2RufAiuSk5Z4XCvc4oHTqMxf56A8qvAE=",
                     },
                     unlock_age: 0,
                 },
                 {
                     utxo: "0x75283072696d82d8bca2fe45471906a26df1dbe0736e41a9f78e02a14e2bfced6e0cb671f023626f890f28204556aca217f3023c891fe64b9f4b3450cb3e80ad",
                     unlock: {
-                        bytes: "q0jWyJRzsrAIBUFQsPfmb5+xmtFPo87cQDFzlJNMQgRvF1uT54Dt9q5q2/d82g287/CdopNNST4MoXigVwaBMQ==",
+                        bytes: "9z0yk2uWscgX9FdHtQsaGFoNGpOLWKsEcwGPaVOqIQKYsf+SfRQL/uxq+JCuWLdTFUca+bCXLyfhz4Hf2TYmCgE=",
                     },
                     unlock_age: 0,
                 },
@@ -206,19 +206,13 @@ describe("TxCanceller", () => {
             outputs: [
                 {
                     type: 0,
-                    value: "19999999940089",
-                    lock: {
-                        type: 0,
-                        bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=",
-                    },
+                    value: "19999999940304",
+                    lock: { type: 0, bytes: "uvf5H/3E3rpj8r12wjpHMPSOcoAhhCa2ecQMw6HCI84=" },
                 },
                 {
                     type: 0,
-                    value: "19999999940089",
-                    lock: {
-                        type: 0,
-                        bytes: "8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8=",
-                    },
+                    value: "19999999940304",
+                    lock: { type: 0, bytes: "8Pfbo1EB2MhMyXG64ZzvTt50VuOGRGwIDjiXoA5xyZ8=" },
                 },
             ],
             payload: "",

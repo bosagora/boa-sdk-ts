@@ -415,7 +415,10 @@ describe("BOA Client", () => {
         // Verify the signature
         for (let idx = 0; idx < vote_tx.inputs.length; idx++)
             assert.ok(
-                keys[idx].address.verify<sdk.Transaction>(new sdk.Signature(vote_tx.inputs[idx].unlock.bytes), vote_tx)
+                keys[idx].address.verify<sdk.Hash>(
+                    sdk.SigPair.decode(vote_tx.inputs[idx].unlock.bytes).signature,
+                    vote_tx.getChallenge()
+                )
             );
     });
 
@@ -757,41 +760,41 @@ describe("BOA Client", () => {
                 {
                     utxo: "0x3451d94322524e3923fd26f0597fb8a9cdbf3a9427c38ed1ca61104796d39c5b9b5ea33d576f17c2dc17bebc5d84a0559de8c8c521dfe725d4c352255fc71e85",
                     unlock: {
-                        bytes: "2Nk4xrLs6bFv3wZsWOwfnR7x3XjpNKt6hJFZ8BL8lAUANZmn82CcvuMRp5NPhn8GbiMr829GXq8xGT5BMGLHVQ==",
+                        bytes: "sbu7Me2A65jZK9eIloroRZApQPw14aiyNfoY525AVg+qJgN0LmnBqqMlZsLa2V5H1Yhhi5+bOfb59Nv9gyFnxAE=",
                     },
                     unlock_age: 0,
                 },
                 {
                     utxo: "0x7e1958dbe6839d8520d65013bbc85d36d47a9f64cf608cc66c0d816f0b45f5c8a85a8990725ffbb1ab13c3c65b45fdc06f4745d455e00e1068c4c5c0b661d685",
                     unlock: {
-                        bytes: "xJfoZhmyJsJUOQOjy56eVCU2XwBMGXVCRN22oUuQ7QO2+DrpPCSSZ6Lqdiciaof67f4NYO72kMyfpJOPWV14ug==",
+                        bytes: "o3Fhpcb7P5aAvN4kS41tWPbdT5hm8JkBeNOezf4+aAQudAbiEqUXmXk3m5v+NpLGuF4vcM7qHFTGEow45/vy1wE=",
                     },
                     unlock_age: 0,
                 },
                 {
                     utxo: "0xc3780f9907a97c20a2955945544e7732a60702c32d81e016bdf1ea172b7b7fb96e9a4164176663a146615307aaadfbbad77e615a7c792a89191e85471120d314",
                     unlock: {
-                        bytes: "j5tkee+U5JmM0xG75ReWy35X1UB8VHIG0ecraq7iVAgKi6QeO/x73wwUPQuSqk+0fLK7UhQqbIz985a7zIsJXw==",
+                        bytes: "l6O118ccTnwRcNeIbvc5JM+c2o6aG9DtCOtdE4uU3w5Cgp+PkrqnSK7KXG3QHJ+XNFoWSgnpfQG/KkgtYLcKcAE=",
                     },
                     unlock_age: 0,
                 },
                 {
                     utxo: "0xd44608de8a5015b04f933098fd7f67f84ffbf00c678836d38c661ab6dc1f149606bdc96bad149375e16dc5722b077b14c0a4afdbe6d30932f783650f435bcb92",
                     unlock: {
-                        bytes: "a9URqfrFPncsPEgcUkSOFHLvU/2StjBOkGhvXQuKFwX2j9QelzGiIkdx0snJ7HcT3XZDh1PrUKEZ/4jDzEOyuA==",
+                        bytes: "uQOckwiUzPGkgwXbikFzA4wpSNol/1WDq2PSR3mNsQsVivw2BWQMxMTdWmW2DPsZScQljXQ/tVDtzpAAo/Ou6QE=",
                     },
                     unlock_age: 0,
                 },
                 {
                     utxo: "0xfca92fe76629311c6208a49e89cb26f5260777278cd8b272e7bb3021adf429957fd6844eb3b8ff64a1f6074126163fd636877fa92a1f4329c5116873161fbaf8",
                     unlock: {
-                        bytes: "0iAH/LNVmuqGQDnLm3of43VjILzX9eqw5KqFutVVkgQ3nR8KGVyW6zeqlMTfow1TUOHoOo3zY5K+Afs83V01mA==",
+                        bytes: "UaK2od6qjKsjWWBQsTVWFZxLyh9mYnPJ7qZYhvh7VgXAITi+IJmUYLb65aKaBD5kU1stL5Rs7hhEw0X8M9MfcwE=",
                     },
                     unlock_age: 0,
                 },
             ],
             outputs: [
-                { type: 0, value: "146600", lock: { type: 0, bytes: "wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE=" } },
+                { type: 0, value: "145600", lock: { type: 0, bytes: "wa1PiNOnmZYBpjfjXS58SZ6fJTaihHSRZRt86aWWRgE=" } },
                 { type: 0, value: "200000", lock: { type: 0, bytes: "x60Co13nUDL3h+pKXCsG460FHRgDZWnJFfTYnch/tLg=" } },
             ],
             payload: "YXRhZCBldG92",
@@ -887,7 +890,7 @@ describe("BOA Client", () => {
         // Get Voting Fee
         const fee = await boa_client.getVotingFee(273);
 
-        assert.deepStrictEqual(fee, sdk.JSBI.BigInt(29310660));
+        assert.deepStrictEqual(fee, sdk.JSBI.BigInt(29310880));
     });
 
     it("Verify the payment", async () => {

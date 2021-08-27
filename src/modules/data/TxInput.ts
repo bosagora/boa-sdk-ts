@@ -105,7 +105,7 @@ export class TxInput {
      * Returns the estimated data size.
      */
     public static getEstimatedNumberOfBytes(): number {
-        return Hash.Width + Utils.SIZE_OF_INT + Signature.Width;
+        return Hash.Width + Utils.SIZE_OF_INT + Signature.Width + Utils.SIZE_OF_BYTE;
     }
 
     /**

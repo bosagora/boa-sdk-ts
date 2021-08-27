@@ -40,6 +40,7 @@ export { LinkDataWithProposalFee, LinkDataWithProposalData, LinkDataWithVoteData
 export { LockType, Lock, Unlock } from "./modules/script/Lock";
 export { OP, isOpcode, isConditional, isPayload } from "./modules/script/Opcodes";
 export { ScriptType, Script } from "./modules/script/Script";
+export { SigHash, SigPair } from "./modules/script/Signature";
 
 export { Utils, Endian, ArrayRange, iota } from "./modules/utils/Utils";
 export { SodiumHelper } from "./modules/utils/SodiumHelper";
